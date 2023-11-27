@@ -34,7 +34,7 @@ spec:
         - name: {{ .Chart.Name }}-transmitter
           envFrom:
             - secretRef:
-                name: {{ .Values.existingEnv }}
+                name: {{ .Values.envSecret }}
           env:
             - name: AYON_ADDON_NAME
               value: {{ .Values.addonName }}
@@ -65,7 +65,7 @@ spec:
         - name: {{ .Chart.Name }}-processor
           envFrom:
             - secretRef:
-                name: {{ .Values.existingEnv }}
+                name: {{ .Values.envSecret }}
           env:
             - name: AYON_ADDON_NAME
               value: {{ .Values.addonName }}
@@ -96,7 +96,7 @@ spec:
         - name: {{ .Chart.Name }}-leecher
           envFrom:
             - secretRef:
-                name: {{ .Values.existingEnv }}
+                name: {{ .Values.envSecret }}
           env:
             - name: AYON_ADDON_NAME
               value: {{ .Values.addonName }}
