@@ -43,7 +43,7 @@ serviceAccount:
 
 # This value has to be hardcoded in the seal-secret due to the way the encrypt the data it cannot
 # be templated with helm
-envSecret: &envSecret "ayon-shotgrid-secrets"
+envSecret: &envSecret "ayon-service-secrets"
 
 podAnnotations: {}
 podLabels: {}
