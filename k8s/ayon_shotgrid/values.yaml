@@ -147,7 +147,6 @@ ayonShotgridProcessor:
       cpu: 4
       memory: 8Gi
 
-
 ayonShotgridLeecher:
   image:
     repository: ynput/ayon-shotgrid-leecher
