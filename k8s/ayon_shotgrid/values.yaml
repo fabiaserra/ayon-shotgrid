@@ -24,6 +24,8 @@ affinity: &affinity
 
 replicaCount: 1
 
+pullPolicy: IfNotPresent
+
 imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
@@ -113,10 +115,9 @@ nodeSelector: {}
 
 tolerations: []
 
-ayon-shotgrid-transmitter:
+ayonShotgridTransmitter:
   image:
     repository: ynput/ayon-shotgrid-transmitter
-    pullPolicy: IfNotPresent
 
   affinity: *affinity
 
@@ -130,10 +131,9 @@ ayon-shotgrid-transmitter:
       cpu: 4
       memory: 8Gi
 
-ayon-shotgrid-processor:
+ayonShotgridProcessor:
   image:
     repository: ynput/ayon-shotgrid-processor
-    pullPolicy: IfNotPresent
 
   affinity: *affinity
 
@@ -148,10 +148,9 @@ ayon-shotgrid-processor:
       memory: 8Gi
 
 
-ayon-shotgrid-leecher:
+ayonShotgridLeecher:
   image:
     repository: ynput/ayon-shotgrid-leecher
-    pullPolicy: IfNotPresent
 
   affinity: *affinity
 

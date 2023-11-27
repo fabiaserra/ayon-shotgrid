@@ -42,8 +42,8 @@ spec:
               value: {{ .Chart.AppVersion }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
-          image: "{{ .Values.ayon-shotgrid-transmitter.image.repository }}:{{ .Values.ayon-shotgrid-transmitter.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          image: "{{ .Values.ayonShotgridTransmitter.image.repository }}:{{ .Values.ayonShotgridTransmitter.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.pullPolicy }}
           # ports:
           #   - name: http
           #     containerPort: {{ .Values.service.port }}
@@ -57,7 +57,7 @@ spec:
           #     path: /
           #     port: http
           resources:
-            {{- toYaml .Values.ayon-shotgrid-transmitter.resources | nindent 12 }}
+            {{- toYaml .Values.ayonShotgridTransmitter.resources | nindent 12 }}
           # {{- with .Values.volumeMounts }}
           # volumeMounts:
           #   {{- toYaml . | nindent 12 }}
@@ -73,8 +73,8 @@ spec:
               value: {{ .Chart.AppVersion }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
-          image: "{{ .Values.ayon-shotgrid-processor.image.repository }}:{{ .Values.ayon-shotgrid-processor.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          image: "{{ .Values.ayonShotgridProcessor.image.repository }}:{{ .Values.ayonShotgridProcessor.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.pullPolicy }}
           # ports:
           #   - name: http
           #     containerPort: {{ .Values.service.port }}
@@ -88,7 +88,7 @@ spec:
           #     path: /
           #     port: http
           resources:
-            {{- toYaml .Values.ayon-shotgrid-processor.resources | nindent 12 }}
+            {{- toYaml .Values.ayonShotgridProcessor.resources | nindent 12 }}
           # {{- with .Values.volumeMounts }}
           # volumeMounts:
           #   {{- toYaml . | nindent 12 }}
@@ -104,8 +104,8 @@ spec:
               value: {{ .Chart.AppVersion }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
-          image: "{{ .Values.ayon-shotgrid-leecher.image.repository }}:{{ .Values.ayon-shotgrid-leecher.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          image: "{{ .Values.ayonShotgridLeecher.image.repository }}:{{ .Values.ayonShotgridLeecher.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.pullPolicy }}
           # ports:
           #   - name: http
           #     containerPort: {{ .Values.service.port }}
@@ -119,7 +119,7 @@ spec:
           #     path: /
           #     port: http
           resources:
-            {{- toYaml .Values.ayon-shotgrid-leecher.resources | nindent 12 }}
+            {{- toYaml .Values.ayonShotgridLeecher.resources | nindent 12 }}
           # {{- with .Values.volumeMounts }}
           # volumeMounts:
           #   {{- toYaml . | nindent 12 }}
