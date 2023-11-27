@@ -1,16 +1,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "ayon_shotgrid.fullname" . }}
+  name: {{ include "ayon-shotgrid.fullname" . }}
   labels:
-    {{- include "ayon_shotgrid.labels" . | nindent 4 }}
+    {{- include "ayon-shotgrid.labels" . | nindent 4 }}
 spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
   {{- end }}
   selector:
     matchLabels:
-      {{- include "ayon_shotgrid.selectorLabels" . | nindent 6 }}
+      {{- include "ayon-shotgrid.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       {{- with .Values.podAnnotations }}
@@ -18,7 +18,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "ayon_shotgrid.labels" . | nindent 8 }}
+        {{- include "ayon-shotgrid.labels" . | nindent 8 }}
 	{{- with .Values.podLabels }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
@@ -27,7 +27,7 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "ayon_shotgrid.serviceAccountName" . }}
+      serviceAccountName: {{ include "ayon-shotgrid.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
