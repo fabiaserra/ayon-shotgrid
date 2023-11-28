@@ -241,7 +241,7 @@ def get_or_create_sg_field(
         )
         if attribute_exists:
             logging.debug(
-                f"Shotgrid field {sg_entity_type} > {field_code} exists."
+                f"Shotgrid field '{field_name}' ('{field_type}') at '{sg_entity_type}' with code name '{field_code}' exists."
             )
             return attribute_exists
 
@@ -251,7 +251,7 @@ def get_or_create_sg_field(
 
     if not attribute_exists:
         logging.debug(
-            f"Shotgrid field {sg_entity_type} > {field_code} does not exists."
+            f"Shotgrid field '{field_name}' ('{field_type}') at '{sg_entity_type}' with code name '{field_code}' does not exist."
         )
 
         try:
@@ -262,12 +262,12 @@ def get_or_create_sg_field(
                 properties=field_properties,
             )
             logging.debug(
-                f"Created Shotgrid field {sg_entity_type} > {field_code}"
+                f"Created Shotgrid field '{field_name}' ('{field_type}') at '{sg_entity_type}' with code name '{field_code}'"
             )
             return attribute_exists
         except Exception as e:
             logging.error(
-                f"Can't create Shotgrid field {sg_entity_type} > {field_code}."
+                f"Can't create Shotgrid field '{field_name}' ('{field_type}') at '{sg_entity_type}' with code name '{field_code}'."
             )
             logging.error(e)
 
