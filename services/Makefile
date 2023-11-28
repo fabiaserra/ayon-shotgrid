@@ -48,6 +48,7 @@ dev:
 		--attach=stdout \
 		--attach=stderr \
 		--network=host \
+		--dns-search tenant-alkemyx.svc.tenant.chi.local --dns-search alkemyx.lan --dns-search alkemy-x.com \
 		$(IMAGE) python -m $(SERVICE)
 
 	find $(CURDIR)/$(SERVICE) -type l -delete
