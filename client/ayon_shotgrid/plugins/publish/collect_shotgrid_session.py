@@ -11,18 +11,13 @@ class CollectShotgridSession(pyblish.api.ContextPlugin):
     label = "Collecting Shotgrid session"
 
     def process(self, context):
-        user_login = os.getenv("AYON_SG_USERNAME")
-        if not user_login:
-            raise KnownPublishError(
-                "Have you logged in into Ayon Tray > Shotgrid?"
-            )
-
+        user_login = os.getenv("USER")
         shotgrid_module = context.data["openPypeModules"]["shotgrid"]
-        shotgrid_url = shotgrid_module.get_sg_url()
+        sg_url = shotgrid_module.get_sg_url()
 
         self.log.info(
             "Creating Shotgrid Session for user: {0} at {1}".format(
-                user_login, shotgrid_url
+                user_login, sg_url
             )
         )
 
@@ -33,7 +28,7 @@ class CollectShotgridSession(pyblish.api.ContextPlugin):
             self.log.error("Failed to connect to Shotgrid.", exc_info=True)
             raise KnownPublishError(
                 "Could not connect to Shotgrid {0} with user {1}.".format(
-                shotgrid_url,
+                sg_url,
                 user_login
                 )
             )
@@ -41,7 +36,7 @@ class CollectShotgridSession(pyblish.api.ContextPlugin):
         if sg_session is None:
             raise KnownPublishError(
                 "Could not connect to Shotgrid {0} with user {1}.".format(
-                shotgrid_url,
+                sg_url,
                 user_login
                 )
             )
