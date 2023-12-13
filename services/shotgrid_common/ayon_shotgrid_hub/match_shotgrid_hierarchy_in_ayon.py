@@ -26,7 +26,7 @@ def match_shotgrid_hierarchy_in_ayon(
         entity_hub (ayon_api.entity_hub.EntityHub): The AYON EntityHub.
         sg_project (dict): The Shotgrid project.
         sg_project (shotgun_api3.Shotgun): The Shotgrid session.
-        project_code_field (str): The Shotgrid project code field (usually `code`)
+        project_code_field (str): The Shotgrid project code field.
     """
 
     sg_entities_by_id, sg_entities_by_parent_id = get_sg_entities(
