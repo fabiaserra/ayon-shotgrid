@@ -1,52 +1,25 @@
+import os
+import getpass
 import shotgun_api3
-from shotgun_api3.shotgun import AuthenticationFault
 
-from openpype.lib import OpenPypeSettingsRegistry
+import ayon_api
+from openpype.lib import Logger
 
-
-def check_user_permissions(shotgrid_url, username, password):
-    """Check if the provided user can access the Shotgrid API.
-
-    Args:
-        shotgrid_url (str): The Shotgun server URL.
-        username (str): The Shotgrid login username.
-        password (str): The Shotgrid login password.
-        
-    Returns:
-        tuple(bool, str): Whether the connection was succsefull or not, and a 
-            string message with the result.
-     """
-    
-    if not shotgrid_url or not username or not password:
-        return (False, "Missing a field.")
-
-    try:
-        session = create_sg_session(
-            shotgrid_url,
-            username,
-            password
-        )
-        session.close()
-    except AuthenticationFault as e:
-        return (False, str(e))
-
-    return (True, "Succesfully logged in.")
+from ayon_shotgrid.version import __version__
 
 
-def clear_local_login():
-    """Clear the Shotgrid Login entry from the local registry. """
-    reg = OpenPypeSettingsRegistry()
-    reg.delete_item("shotgrid_login")
+logger = Logger.get_logger(__name__)
 
 
-def create_sg_session(shotgrid_url, username, password):
+def create_sg_session(shotgrid_url, username, script_name, api_key, proxy):
     """Attempt to create a Shotgun Session
 
     Args:
         shotgrid_url (str): The Shotgun server URL.
+        username (str): The Shotgrid username to use the Session as.
         script_name (str): The Shotgrid API script name.
         api_key (str): The Shotgrid API key.
-        username (str): The Shotgrid username to use the Session as.
+        proxy (str): The proxy address to use to connect to SG server.
 
     Returns:
         session (shotgun_api3.Shotgun): A Shotgrid API Session.
@@ -57,8 +30,10 @@ def create_sg_session(shotgrid_url, username, password):
 
     session = shotgun_api3.Shotgun(
         base_url=shotgrid_url,
-        login=username,
-        password=password,
+        script_name=script_name,
+        http_proxy=proxy,
+        api_key=api_key,
+        sudo_as_login=username,
     )
 
     session.preferences_read()
@@ -66,17 +41,52 @@ def create_sg_session(shotgrid_url, username, password):
     return session
 
 
-def get_local_login():
-    """Get the Shotgrid Login entry from the local registry. """
-    reg = OpenPypeSettingsRegistry()
+### Starts Alkemy-X Override ###
+def get_shotgrid_session():
+    """Return a Shotgun API session object for the configured ShotGrid server.
+
+    The function reads the ShotGrid server settings from the OpenPype
+    configuration file and uses them to create a Shotgun API session object.
+
+    Returns:
+        A Shotgun API session object.
+    """
+    sg_settings = ayon_api.get_addon_settings("shotgrid", __version__)
+    sg_url = sg_settings["shotgrid_server"]
+    sg_secret = ayon_api.get_secret(sg_settings["shotgrid_api_secret"])
+    
+    # Hack because of a bug in Ayon that returns a list sometimes
+    if isinstance(sg_secret, list):
+        sg_secret = sg_secret[0]
+
+    sg_script_name = sg_secret.get("name")
+    sg_api_key = sg_secret.get("value")
+
+    if not sg_script_name and not sg_api_key:
+        logger.error(
+            "No Shotgrid API credential found, please enter "
+            "script name and script key in OpenPype settings"
+        )
+
+    user = getpass.getuser()
+    proxy = os.environ.get("HTTPS_PROXY", "").lstrip("https://")
+
     try:
-        return reg.get_item("shotgrid_login")
-    except Exception:
-        return (None, None)
+        return create_sg_session(
+            sg_url,
+            user,
+            sg_script_name,
+            sg_api_key,
+            proxy,
+        )
+        
+    except shotgun_api3.shotgun.AuthenticationFault:
+        return create_sg_session(
+            sg_url,
+            f"{user}@alkemy-x.com",
+            sg_script_name,
+            sg_api_key,
+            proxy,
+        )
 
-
-def save_local_login(username, password):
-    """Save the Shotgrid Login entry from the local registry. """
-    reg = OpenPypeSettingsRegistry()
-    reg.set_item("shotgrid_login", (username, password))
-
+### Ends Alkemy-X Override ###
