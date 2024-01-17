@@ -103,8 +103,10 @@ class ShotgridListener:
             "Project",
             filters=[["sg_ayon_auto_sync", "is", True]]
         )
+        if not sg_projects:
+            return None
+        
         logging.debug(f"Projects with the autosync enabled {sg_projects}")
-
         filters.append(["project", "in", sg_projects])
 
         sg_event_types = []
@@ -115,7 +117,9 @@ class ShotgridListener:
             for event_name in SG_EVENT_TYPES:
                 sg_event_types.append(event_name.format(entity_type))
 
-        filters.append(["event_type", "in", sg_event_types])
+        if sg_event_types:
+            logging.debug(f"Event types {sg_event_types}")
+            filters.append(["event_type", "in", sg_event_types])
 
         return filters
 
@@ -137,6 +141,7 @@ class ShotgridListener:
             last_event_id = int(last_event_id["hash"])
 
         if not last_event_id:
+            logging.debug("Find the event id with filters: %s", sg_filters)
             last_event = self.sg_session.find_one(
                 "EventLogEntry",
                 filters=sg_filters,
