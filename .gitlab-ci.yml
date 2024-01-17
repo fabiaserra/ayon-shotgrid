@@ -104,10 +104,10 @@ update-helm-chart:
   script:
     # The last part of this syntax is to avoid replacing multiple 'tag' entries and just do it on the first one it finds
     # which in our values.yaml happens to be the 'ayon' artifact that we are interested in replacing
-    - 'sed -i "/tag:.*/{s//tag: ${VERSION}/;:a;n;ba;}" k8s/ayon/values.yaml'
-    - 'sed -i "s/appVersion:.*/appVersion: ${VERSION}/" k8s/ayon/Chart.yaml'
-    - git add k8s/ayon/values.yaml
-    - git add k8s/ayon/Chart.yaml
+    - 'sed -i "/tag:.*/{s//tag: ${VERSION}/;:a;n;ba;}" k8s/ayon_shotgrid/values.yaml'
+    - 'sed -i "s/appVersion:.*/appVersion: ${VERSION}/" k8s/ayon_shotgrid/Chart.yaml'
+    - git add k8s/ayon_shotgrid/values.yaml
+    - git add k8s/ayon_shotgrid/Chart.yaml
     - git commit -m "Update Helm chart with new tag [ci skip]"
     - git diff-index --quiet HEAD || git commit -am '[skip ci] values.yml update'
     - git push origin "${CI_COMMIT_BRANCH}"
