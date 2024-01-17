@@ -138,7 +138,7 @@ ayonShotgridProcessor:
   image:
     repository: dm.tenant-alkemyx.lga1.ingress.coreweave.cloud/coreweave/pipeline/shotgrid/ayon-shotgrid/alkemyx/ayon-shotgrid-processor
     # Managed with CI
-    tag: 0.2.11-67b64d1d
+    tag: 0.2.11
     pullPolicy: Always
 
   affinity: *affinity
@@ -157,7 +157,7 @@ ayonShotgridLeecher:
   image:
     repository: dm.tenant-alkemyx.lga1.ingress.coreweave.cloud/coreweave/pipeline/shotgrid/ayon-shotgrid/alkemyx/ayon-shotgrid-leecher
     # Managed with CI
-    tag: 0.2.11-67b64d1d
+    tag: 0.2.11
     pullPolicy: Always
 
   affinity: *affinity
