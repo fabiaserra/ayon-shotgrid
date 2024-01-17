@@ -117,7 +117,10 @@ tolerations: []
 
 ayonShotgridTransmitter:
   image:
-    repository: ynput/ayon-shotgrid-transmitter
+    repository: dm.tenant-alkemyx.lga1.ingress.coreweave.cloud/coreweave/pipeline/shotgrid/ayon-shotgrid/alkemyx/ayon-shotgrid-transmitter
+    # Managed with CI
+    tag: 0.2.11-67b64d1d
+    pullPolicy: Always
 
   affinity: *affinity
 
@@ -133,7 +136,10 @@ ayonShotgridTransmitter:
 
 ayonShotgridProcessor:
   image:
-    repository: ynput/ayon-shotgrid-processor
+    repository: dm.tenant-alkemyx.lga1.ingress.coreweave.cloud/coreweave/pipeline/shotgrid/ayon-shotgrid/alkemyx/ayon-shotgrid-processor
+    # Managed with CI
+    tag: 0.2.11-67b64d1d
+    pullPolicy: Always
 
   affinity: *affinity
 
@@ -149,7 +155,10 @@ ayonShotgridProcessor:
 
 ayonShotgridLeecher:
   image:
-    repository: ynput/ayon-shotgrid-leecher
+    repository: dm.tenant-alkemyx.lga1.ingress.coreweave.cloud/coreweave/pipeline/shotgrid/ayon-shotgrid/alkemyx/ayon-shotgrid-leecher
+    # Managed with CI
+    tag: 0.2.11-67b64d1d
+    pullPolicy: Always
 
   affinity: *affinity
 
