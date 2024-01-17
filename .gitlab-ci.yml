@@ -1,0 +1,74 @@
+stages:
+  - get-version
+  - build
+
+get-version:
+  stage: get-version
+  tags:
+    - kube
+  image:
+    name: "ubuntu:jammy"
+  script:
+    - ADDON_VERSION=$(sed -n 's/__version__ = \"\(.*\)\"/\1/p' ./version.py)
+    - echo "ADDON_VERSION=${ADDON_VERSION}" > version_info.txt
+  artifacts:
+    paths:
+      - ./build/installer
+    reports:
+      dotenv: version_info.txt
+  rules:
+    - if: $CI_COMMIT_BRANCH == "release/alkemyx"
+
+build-shotgrid-leecher:
+  stage: build
+  dependencies:
+    - get-version
+  tags:
+    - kube
+  image:
+    name: gcr.io/kaniko-project/executor:v1.14.0-debug
+    entrypoint: [""]
+  script:
+    - CI_COMMIT_BRANCH_SAFE="${CI_COMMIT_BRANCH////-}" && echo "$CI_COMMIT_BRANCH_SAFE"
+    - /kaniko/executor
+      --context "${CI_PROJECT_DIR}/services"
+      --dockerfile "${CI_PROJECT_DIR}/services/leecher/Dockerfile"
+      --destination "${CI_REGISTRY_IMAGE}/ayon-shotgrid-leecher:${ADDON_VERSION}-${CI_COMMIT_SHORT_SHA}"
+  rules:
+    - if: $CI_COMMIT_BRANCH == "release/alkemyx"
+
+build-shotgrid-processor:
+  stage: build
+  dependencies:
+    - get-version
+  tags:
+    - kube
+  image:
+    name: gcr.io/kaniko-project/executor:v1.14.0-debug
+    entrypoint: [""]
+  script:
+    - CI_COMMIT_BRANCH_SAFE="${CI_COMMIT_BRANCH////-}" && echo "$CI_COMMIT_BRANCH_SAFE"
+    - /kaniko/executor
+      --context "${CI_PROJECT_DIR}/services"
+      --dockerfile "${CI_PROJECT_DIR}/services/processor/Dockerfile"
+      --destination "${CI_REGISTRY_IMAGE}/ayon-shotgrid-processor:${ADDON_VERSION}-${CI_COMMIT_SHORT_SHA}"
+  rules:
+    - if: $CI_COMMIT_BRANCH == "release/alkemyx"
+
+build-shotgrid-transmitter:
+  stage: build
+  dependencies:
+    - get-version
+  tags:
+    - kube
+  image:
+    name: gcr.io/kaniko-project/executor:v1.14.0-debug
+    entrypoint: [""]
+  script:
+    - CI_COMMIT_BRANCH_SAFE="${CI_COMMIT_BRANCH////-}" && echo "$CI_COMMIT_BRANCH_SAFE"
+    - /kaniko/executor
+      --context "${CI_PROJECT_DIR}/services"
+      --dockerfile "${CI_PROJECT_DIR}/services/transmitter/Dockerfile"
+      --destination "${CI_REGISTRY_IMAGE}/ayon-shotgrid-transmitter:${ADDON_VERSION}-${CI_COMMIT_SHORT_SHA}"
+  rules:
+    - if: $CI_COMMIT_BRANCH == "release/alkemyx"
