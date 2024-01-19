@@ -114,7 +114,6 @@ class ShotgridListener:
                 sg_event_types.append(event_name.format(entity_type))
 
         if sg_event_types:
-            logging.debug(f"Event types {sg_event_types}")
             filters.append(["event_type", "in", sg_event_types])
 
         return filters
