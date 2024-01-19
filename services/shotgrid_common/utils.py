@@ -416,6 +416,7 @@ def get_sg_entity_as_ay_dict(
     )
 
     if not sg_entity:
+        logging.warning(f"SG Entity with id '{sg_id}' and type '{sg_type}' not found.")
         return {}
 
     new_entity = _sg_to_ay_dict(sg_entity)
