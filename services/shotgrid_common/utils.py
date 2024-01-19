@@ -29,7 +29,7 @@ def _sg_to_ay_dict(sg_entity: dict, project_code_field=None) -> dict:
     if not project_code_field:
         project_code_field = "code"
 
-    logging.debug("Transforming sg_entity '%s' to ayon dict." % sg_entity)
+    logging.debug(f"Transforming sg_entity '{sg_entity}' to ayon dict.")
     
     task_type = None
     if sg_entity["type"] == "Task":
@@ -257,7 +257,7 @@ def get_or_create_sg_field(
         )
         if attribute_exists:
             logging.debug(
-                f"Shotgrid field '{field_name}' ('{field_type}') at '{sg_entity_type}' with code name '{field_code}' exists."
+                f"Shotgrid field {sg_entity_type} > {field_code} exists."
             )
             return attribute_exists
 
@@ -267,7 +267,7 @@ def get_or_create_sg_field(
 
     if not attribute_exists:
         logging.debug(
-            f"Shotgrid field '{field_name}' ('{field_type}') at '{sg_entity_type}' with code name '{field_code}' does not exist."
+            f"Shotgrid field {sg_entity_type} > {field_code} does not exists."
         )
 
         try:
@@ -278,12 +278,12 @@ def get_or_create_sg_field(
                 properties=field_properties,
             )
             logging.debug(
-                f"Created Shotgrid field '{field_name}' ('{field_type}') at '{sg_entity_type}' with code name '{field_code}'"
+                f"Created Shotgrid field {sg_entity_type} > {field_code}"
             )
             return attribute_exists
         except Exception as e:
             logging.error(
-                f"Can't create Shotgrid field '{field_name}' ('{field_type}') at '{sg_entity_type}' with code name '{field_code}'."
+                f"Can't create Shotgrid field {sg_entity_type} > {field_code}."
             )
             logging.error(e)
 
@@ -423,7 +423,6 @@ def get_sg_entity_as_ay_dict(
     )
 
     if not sg_entity:
-        logging.warning(f"SG Entity with id '{sg_id}' and type '{sg_type}' not found.")
         return {}
 
     new_entity = _sg_to_ay_dict(sg_entity)
