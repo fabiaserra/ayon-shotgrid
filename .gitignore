@@ -37,6 +37,7 @@ Temporary Items
 # IDEA
 ######
 .idea/
+
 services/transmitter/ayon_shotgrid_hub
 services/transmitter/__init__.py
 services/transmitter/utils.py

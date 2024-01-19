@@ -99,7 +99,6 @@ class ShotgridListener:
         sg_projects = self.sg_session.find(
             "Project", filters=[["sg_ayon_auto_sync", "is", True]]
         )
-        logging.debug(f"Projects with the autosync enabled {sg_projects}")
 
         if not sg_projects:
             return []
@@ -167,7 +166,6 @@ class ShotgridListener:
         while True:
             sg_filters = self._build_shotgrid_filters()
             if not sg_filters:
-                logging.debug("No Shotgrid project with `Ayon Sync` enabled.")
                 time.sleep(self.shotgrid_polling_frequency)
                 continue
 
@@ -183,10 +181,6 @@ class ShotgridListener:
                 )
 
                 if not events:
-                    logging.info("No new events found.")
-                    logging.info(
-                        f"Waiting {self.shotgrid_polling_frequency} seconds..."
-                    )
                     time.sleep(self.shotgrid_polling_frequency)
                     continue
 
@@ -209,7 +203,6 @@ class ShotgridListener:
                 logging.error(err)
                 log_traceback(err)
 
-            logging.info(f"Waiting {self.shotgrid_polling_frequency} seconds...")
             time.sleep(self.shotgrid_polling_frequency)
 
     def send_shotgrid_event_to_ayon(self, payload: dict[str, Any]) -> int:

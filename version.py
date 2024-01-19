@@ -1,3 +1,3 @@
 # -*- coding: utf-8 -*-
 """Package declaring addon version."""
-__version__ = "0.2.11-ax.4"
+__version__ = "0.3.0-ax.1"
