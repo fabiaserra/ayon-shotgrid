@@ -11,7 +11,7 @@ class CollectShotgridSession(pyblish.api.ContextPlugin):
     label = "Collecting Shotgrid session"
 
     def process(self, context):
-        user_login = os.getenv("USER")
+        user_login = os.getenv("AYON_SG_USERNAME")
 
         shotgrid_module = context.data["openPypeModules"]["shotgrid"]
         shotgrid_url = shotgrid_module.get_sg_url()
