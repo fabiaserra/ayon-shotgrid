@@ -38,12 +38,17 @@ Temporary Items
 ######
 .idea/
 
-services/transmitter/ayon_shotgrid_hub
-services/transmitter/__init__.py
-services/transmitter/utils.py
-services/transmitter/constants.py
-services/leecher/ayon_shotgrid_hub
-services/leecher/__init__.py
-services/leecher/utils.py
-services/leecher/constants.py
+# Add symlinked files to ignore
 client/ayon_shotgrid/version.py
+services/leecher/__init__.py
+services/leecher/ayon_shotgrid_hub
+services/leecher/constants.py
+services/leecher/utils.py
+services/processor/__init__.py
+services/processor/ayon_shotgrid_hub
+services/processor/constants.py
+services/processor/utils.py
+services/transmitter/__init__.py
+services/transmitter/ayon_shotgrid_hub
+services/transmitter/constants.py
+services/transmitter/utils.py
