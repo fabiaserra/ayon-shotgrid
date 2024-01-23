@@ -50,14 +50,14 @@ class ShotgridSettings(BaseSettingsModel):
         example="sg_code"
     )
     enable_shotgrid_local_storage: bool = Field(
-        default=False,
-        title="Whether to try make use of local storage defined in Shotgrid ('Site Preferences -> File Management -> Local Storage') or not.",
-        description="In order to store paths in Shotgrid agnostic of the OS we use the file management local storage."
+        default=True,
+        title="Enable Shotgrid Local Storage.",
+        description="Whether to try make use of local storage defined in Shotgrid ('Site Preferences -> File Management -> Local Storage') or not."
     )
     shotgrid_local_storage_key: str = Field(
-        default="coreweave",
-        title="Shotgrid Local Storage 'code' entry name to use",
-        description="In order to store paths in Shotgrid agnostic of the OS we use the file management local storage. This entry allows us to select which one of the multiple possible local storages entries to use.",
+        default="primary",
+        title="Shotgrid Local Storage entry name",
+        description="Name of the 'code' to select which one of the multiple possible local storages entries to use.",
         example="ayon_storage"
     )
     service_settings: ShotgridServiceSettings = Field(
