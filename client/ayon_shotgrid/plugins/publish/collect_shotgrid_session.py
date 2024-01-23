@@ -32,11 +32,9 @@ class CollectShotgridSession(pyblish.api.ContextPlugin):
         except Exception as e:
             self.log.error("Failed to connect to Shotgrid.", exc_info=True)
             raise KnownPublishError(
-                "Could not connect to Shotgrid {0} with user {1}.".format(
-                shotgrid_url,
-                user_login
-                )
-            )
+                f"Could not connect to Shotgrid {shotgrid_url} "
+                f"with user {user_login}."
+            ) from e
 
         if sg_session is None:
             raise KnownPublishError(
