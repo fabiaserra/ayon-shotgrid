@@ -11,10 +11,10 @@ class CollectShotgridSession(pyblish.api.ContextPlugin):
     label = "Collect Shotgrid session"
 
     def process(self, context):
-        user_login = os.getenv("AYON_SG_USERNAME")
+        user_login = os.getenv("AYON_SG_USER")
         if not user_login:
             raise KnownPublishError(
-                "AYON_SG_USERNAME not found in environment, make sure it's set."
+                "AYON_SG_USER not found in environment, make sure it's set."
             )
         
         shotgrid_module = context.data["openPypeModules"]["shotgrid"]
