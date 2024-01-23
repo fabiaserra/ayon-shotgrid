@@ -47,3 +47,11 @@ class CollectShotgridSession(pyblish.api.ContextPlugin):
         context.data["shotgridSession"] = sg_session
         context.data["shotgridUser"] = user_login
 
+        local_storage_enabled = shotgrid_module.is_local_storage_enabled()
+        context.data["shotgridLocalStorageEnabled"] = local_storage_enabled
+        self.log.info(f"Shotgrid local storage enabled: {local_storage_enabled}")
+        if local_storage_enabled:
+            local_storage_key = shotgrid_module.get_local_storage_key()
+            self.log.info(f"Using local storage entry {local_storage_key}")
+            context.data["shotgridLocalStorageKey"] = local_storage_key
+        
