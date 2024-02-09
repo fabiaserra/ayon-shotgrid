@@ -58,7 +58,7 @@ class CollectShotgridEntities(pyblish.api.ContextPlugin):
                 "Collected Instance Shotgrid Asset: {}".format(sg_asset)
             )
 
-            task_name = instance.data.get("task")
+            task_name = context.data.get("task")
             sg_task = None
             if sg_asset:
                 sg_task = sg_tasks_by_id.get(sg_asset_id, {}).get(task_name)
@@ -95,7 +95,7 @@ class CollectShotgridEntities(pyblish.api.ContextPlugin):
             if not ayon_folder:
                 continue
 
-            task_name = instance.data.get("task")
+            task_name = context.data.get("task")
             folder_ids.add(ayon_folder["_id"])
             sg_id = ayon_folder["data"].get("shotgridId")
             sg_type = ayon_folder["data"].get("shotgridType")

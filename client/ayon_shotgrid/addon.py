@@ -51,7 +51,7 @@ class ShotgridAddon(OpenPypeModule, IPluginPaths):
     def create_shotgrid_session(self):
         from .lib import credentials
 
-        sg_username = os.getenv("AYON_SG_USER")
+        sg_username = os.getenv("USER") or os.getenv("OPENPYPE_USERNAME") or os.getenv("AYON_SG_USER")
         proxy = os.environ.get("HTTPS_PROXY", "").lstrip("https://")
 
         return credentials.create_sg_session(
