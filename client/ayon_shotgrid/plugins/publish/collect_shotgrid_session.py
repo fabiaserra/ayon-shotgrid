@@ -14,9 +14,9 @@ class CollectShotgridSession(pyblish.api.ContextPlugin):
         user_login = os.getenv("USER") or os.getenv("OPENPYPE_USERNAME") or os.getenv("AYON_SG_USER")
         if not user_login:
             raise KnownPublishError(
-                "AYON_SG_USER not found in environment, make sure it's set."
+                "User not found in environment, make sure it's set."
             )
-        
+
         shotgrid_module = context.data["openPypeModules"]["shotgrid"]
         shotgrid_url = shotgrid_module.get_sg_url()
 
