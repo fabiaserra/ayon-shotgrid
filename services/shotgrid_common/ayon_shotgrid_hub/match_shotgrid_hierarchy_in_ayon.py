@@ -1,5 +1,7 @@
 import collections
 
+from ayon_api import slugify_string
+
 from constants import (
     CUST_FIELD_CODE_ID,
     CUST_FIELD_CODE_SYNC,
@@ -55,6 +57,15 @@ def match_shotgrid_hierarchy_in_ayon(
 
         if ay_id:
             ay_entity = entity_hub.get_or_query_entity_by_id(ay_id, ay_type)
+        
+        # If we haven't found the ay_entity by its id, check by its name
+        # to avoid creating duplicates and erroring out
+        if ay_entity is None:
+            name = slugify_string(sg_entity["name"])
+            for child in ay_parent_entity.children:
+                if child.name.lower() == name.lower():
+                    ay_entity = child
+                    break
 
         # If we couldn't find it we create it.
         if ay_entity is None:
