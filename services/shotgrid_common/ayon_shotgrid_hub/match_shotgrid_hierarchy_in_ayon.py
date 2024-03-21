@@ -100,7 +100,7 @@ def match_shotgrid_hierarchy_in_ayon(
                 )
                 sg_entity_sync_status = "Failed"
                 sg_project_sync_status = "Failed"
-                # TODO: How to deal with mismatches?
+                continue
 
         # Update SG entity with new created data
         sg_entity[CUST_FIELD_CODE_ID] = ay_entity.id
