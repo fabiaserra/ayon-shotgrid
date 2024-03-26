@@ -382,7 +382,7 @@ class AyonShotgridHub:
                     self._ay_project,
                 )
 
-            case "entity.task.renamed" | "entity.folder.renamed":
+            case "entity.task.renamed" | "entity.folder.renamed" | "entity.folder.attrib_changed":
                 update_sg_entity_from_ayon_event(
                     ayon_event,
                     self._sg,
