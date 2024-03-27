@@ -178,7 +178,7 @@ const getShotgridUsers = async () => {
 
     var sgUsersConformed = []
     
-    users_to_ignore = ["dummy", "root"]
+    users_to_ignore = ["dummy", "root", "support"]
     if (sgUsers) {
       sgUsers.forEach((sg_user) => {
         if (
