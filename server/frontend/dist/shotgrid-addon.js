@@ -131,7 +131,7 @@ const syncUsers = async () => {
 
   sgUsers.forEach((sg_user) => {
     let already_exists = false
-    allUsers.forEach((user) => {
+    ayonUsers.forEach((user) => {
       if (sg_user.login == user.name) {
           already_exists = true
       }
@@ -143,50 +143,57 @@ const syncUsers = async () => {
 }
 
 
-async function getShotgridUsers(addonSettings) {
-  try {
-      // Query Shotgrid for all users.
-      const sgBaseUrl = `${addonSettings.shotgrid_server.replace(/\/+$/, '')}/api/v1`;
-      
-      const sgAuthTokenResponse = await axios.post(
-          `${sgBaseUrl}/auth/access_token`, {
-              client_id: addonSettings.shotgrid_script_name,
-              client_secret: addonSettings.shotgrid_api_key,
-              grant_type: "client_credentials",
-          }, {
-              headers: {
-                  'Content-Type': 'application/x-www-form-urlencoded',
-                  'Accept': 'application/json'
-              }
-          }
-      );
+const getShotgridUsers = async () => {
+  /* Query Shotgrid for all active users. */
+  const sgBaseUrl = `${addonSettings.shotgrid_server.replace(/\/+$/, '')}/api/v1`
+  sgAuthToken = await axios
+    .post(`${sgBaseUrl}/auth/access_token`, {
+        client_id: addonSettings.shotgrid_script_name,
+        client_secret: addonSettings.shotgrid_api_key,
+        grant_type: "client_credentials",
+    }, {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Accept': 'application/json'
+      }
+    })
+    .then((result) => result.data.access_token)
+    .catch((error) => {
+      console.log("Unable to Acquire the Shotgrid Authorization Token!")
+      console.log(error)
+    });
 
-      const sgAuthToken = sgAuthTokenResponse.data.access_token;
+    sgUsers = await axios
+      .get(`${sgBaseUrl}/entity/human_users?fields=*`, {
+        headers: {
+            'Authorization': `Bearer ${sgAuthToken}`,
+            'Accept': 'application/json'
+        }
+      })
+      .then((result) => result.data.data)
+      .catch((error) => {
+        console.log("Unable to Fetch Shotgrid Users!")
+        console.log(error)
+      });
 
-      const sgUsersResponse = await axios.get(
-          `${sgBaseUrl}/entity/Users?fields=*`, {
-              headers: {
-                  'Authorization': `Bearer ${sgAuthToken}`,
-                  'Accept': 'application/json'
-              }
-          }
-      );
-
-      const sgUsers = sgUsersResponse.data.data;
-
-      const sgUsersConformed = sgUsers.map(user => ({
-          id: user.id,
-          name: user.attributes.name,
-          email: user.attributes.email,
-          login: user.attributes.login,
-          // Add more fields as needed
-      }));
-
-      return sgUsersConformed;
-  } catch (error) {
-      console.error("Error fetching Shotgrid users:", error.message);
-      return [];
-  }
+    var sgUsersConformed = []
+    
+    users_to_ignore = ["dummy", "root"]
+    if (sgUsers) {
+      sgUsers.forEach((sg_user) => {
+        if (
+          sg_user.attributes.sg_status_list == "act" &&
+          !users_to_ignore.some(item => sg_user.attributes.email.includes(item))
+        ) {
+          sgUsersConformed.push({
+            "login": sg_user.attributes.login,
+            "name": sg_user.attributes.name,
+            "email": sg_user.attributes.email,
+          })
+        }
+      });
+    }
+    return sgUsersConformed;
 }
 
 
@@ -221,10 +228,9 @@ const getAyonUsers = async () => {
   if (ayonUsers) {
     ayonUsers.forEach((user) => {
       ayonUsersConformed.push({
-        "fullName": user.node.fullName,
         "name": user.node.name,
-        "email": user.node.email,
-        "active": user.node.active,
+        "email": user.node.attrib.email,
+        "fullName": user.node.attrib.fullName,
       })
     })
   }
@@ -232,30 +238,26 @@ const getAyonUsers = async () => {
 }
 
 
-const createNewUserInAyon = async (userName, userEmail, fullName) => {
+const createNewUserInAyon = async (login, email, name) => {
   /* Spawn an AYON Event of topic "shotgrid.event" to synchcronize a project
   from Shotgrid into AYON. */
   call_result_paragraph = document.getElementById("call-result");
 
   response = await ayonAPI
-    .put("/api/users/" + userName, {
-      "active": True,
+    .put("/api/users/" + login, {
+      "active": true,
       "attrib": {
-        "fullName": fullName,
-        "email": userEmail,
+        "fullName": name,
+        "email": email,
       },
-      "password": userName,
+      "password": login,
     })
     .then((result) => result)
     .catch((error) => {
-      console.log("Unable to create new user in AYON!")
+      console.log("Unable to create user in AYON!")
       console.log(error)
-      call_result_paragraph.innerHTML = `Unable to create new user in AYON! ${error}`
+      call_result_paragraph.innerHTML = `Unable to create user in AYON! ${error}`
     });
-
-  if (response) {
-    call_result_paragraph.innerHTML = `Succesfully Created User!`
-  }
 }
 
 
