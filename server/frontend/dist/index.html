@@ -3,7 +3,6 @@
   <head>
     <meta charset="utf-8">
     <title>Shotgrid Integration</title>
-    <link rel="stylesheet" type="text/css" href="shotgrid-addon.css">
     <script src="axios.min.js"></script>
   </head>
 
@@ -19,6 +18,7 @@
             <li> The Project has to have a code, has to be lowercase and cannot start with a number. (You can choose what the field code is in the Addon Settings), </li>
         </ul>
     <p>If the above criteria isn't met, the Synchronization button will be greyed out.</p>
+    <button id="sync-users-button"  class="sync-users-button" onclick="syncUsers();">Sync Users</button>
     <p>But first we need to fetch data from Shotgrid, press the button below:</p>
     <button id="populate-table-button"  class="populate-table-button" onclick="populateTable();">Populate Table</button>
 
