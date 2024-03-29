@@ -17,7 +17,8 @@ def create_sg_entity_from_ayon_event(
     ayon_event,
     sg_session,
     ayon_entity_hub,
-    sg_project
+    sg_project,
+    sg_enabled_entities,
 ):
     """Create a Shotgrid entity from an AYON event.
 
@@ -26,18 +27,22 @@ def create_sg_entity_from_ayon_event(
         sg_session (shotgun_api3.Shotgun): The Shotgrid API session.
         ayon_entity_hub (ayon_api.entity_hub.EntityHub): The AYON EntityHub.
         sg_project (dict): The Shotgrid project.
+        sg_enabled_entities (list): List of Shotgrid entities to be enabled.
 
     Returns:
-        ay_entity (ayon_api.entity_hub.EntityHub.Entity): The newly created entity.
+        ay_entity (ayon_api.entity_hub.EntityHub.Entity): The newly
+            created entity.
     """
     logging.debug(f"Processing event {ayon_event}")
 
     ay_id = ayon_event["summary"]["entityId"]
-    ay_entity = ayon_entity_hub.get_or_query_entity_by_id(ay_id, ["folder", "task"])
+    ay_entity = ayon_entity_hub.get_or_query_entity_by_id(
+        ay_id, ["folder", "task"])
 
     if not ay_entity:
         raise ValueError(
-            f"Event has a non existant entity? {ayon_event['summary']['entityId']}"
+            "Event has a non existant entity? "
+            f"{ayon_event['summary']['entityId']}"
         )
 
     sg_id = ay_entity.attribs.get("shotgridId")
@@ -67,6 +72,7 @@ def create_sg_entity_from_ayon_event(
             ay_entity,
             sg_project,
             sg_type,
+            sg_enabled_entities,
         )
         logging.info(f"Created Shotgrid entity: {sg_entity}")
 
@@ -84,13 +90,19 @@ def create_sg_entity_from_ayon_event(
         log_traceback(e)
 
 
-def update_sg_entity_from_ayon_event(ayon_event, sg_session, ayon_entity_hub, custom_attribs_map=None):
+def update_sg_entity_from_ayon_event(
+    ayon_event,
+    sg_session,
+    ayon_entity_hub,
+    custom_attribs_map=None
+):
     """Try to update a Shotgrid entity from an AYON event.
 
     Args:
         sg_event (dict): The `meta` key from a Shotgrid Event.
         sg_session (shotgun_api3.Shotgun): The Shotgrid API session.
         ayon_entity_hub (ayon_api.entity_hub.EntityHub): The AYON EntityHub.
+        custom_attribs_map (dict): A mapping of custom attributes to update.
 
     Returns:
         sg_entity (dict): The modified Shotgrid entity.
@@ -98,13 +110,15 @@ def update_sg_entity_from_ayon_event(ayon_event, sg_session, ayon_entity_hub, cu
     """
     logging.debug(f"Processing event {ayon_event}")
     ay_id = ayon_event["summary"]["entityId"]
-    ay_entity = ayon_entity_hub.get_or_query_entity_by_id(ay_id, ["folder", "task"])
+    ay_entity = ayon_entity_hub.get_or_query_entity_by_id(
+        ay_id, ["folder", "task"])
 
     if not ay_entity:
         raise ValueError(
-            f"Event has a non existant entity? {ayon_event['summary']['entityId']}"
+            "Event has a non existent entity? "
+            f"{ayon_event['summary']['entityId']}"
         )
-    
+
     logging.debug(f"Processing entity {ay_entity}")
 
     sg_id = ay_entity.attribs.get("shotgridId")
@@ -151,7 +165,16 @@ def remove_sg_entity_from_ayon_event(ayon_event, sg_session, ayon_entity_hub):
     """
     logging.debug(f"Processing event {ayon_event}")
     ay_id = ayon_event["payload"]["entityData"]["id"]
-    sg_id = ayon_event["payload"]["entityData"]["attrib"]["shotgridId"]
+    ay_entity_path = ayon_event["payload"]["entityData"]["path"]
+    sg_id = ayon_event["payload"]["entityData"]["attrib"].get("shotgridId")
+
+    if not sg_id:
+        logging.warning(
+            f"Entity '{ay_entity_path}' does not have a "
+            "ShotGrid ID to remove."
+        )
+        return
+
     sg_type = ayon_event["payload"]["entityData"]["attrib"]["shotgridType"]
 
     if not sg_type:
@@ -169,7 +192,8 @@ def remove_sg_entity_from_ayon_event(ayon_event, sg_session, ayon_entity_hub):
         )
 
     if not sg_entity:
-        logging.warning(f"Unable to find Ayon entity with id '{ay_id}' in Shotgrid.")
+        logging.warning(
+            f"Unable to find Ayon entity with id '{ay_id}' in Shotgrid.")
         return
 
     sg_id = sg_entity["id"]
@@ -187,13 +211,16 @@ def _create_sg_entity(
     ay_entity,
     sg_project,
     sg_type,
+    sg_enabled_entities,
 ):
     """ Create a new Shotgrid entity.
 
     Args:
+        sg_session (shotgun_api3.Shotgun): The Shotgrid API session.
         ay_entity (dict): The AYON entity.
         sg_project (dict): The Shotgrid Project.
         sg_type (str): The Shotgrid type of the new entity.
+        sg_enabled_entities (list): List of Shotgrid entities to be enabled.
     """
     sg_field_name = "code"
     sg_step = None
@@ -225,13 +252,14 @@ def _create_sg_entity(
         if not sg_step:
             raise ValueError(
                 f"Unable to create Task {ay_entity.task_type} {ay_entity}\n"
-                f"    -> Shotgrid is missng Pipeline Step {ay_entity.task_type}"
+                f"-> Shotgrid is missing Pipeline Step {ay_entity.task_type}"
             )
 
     parent_field = get_sg_entity_parent_field(
         sg_session,
         sg_project,
         sg_type,
+        sg_enabled_entities
     )
 
     if parent_field.lower() == "project":
@@ -253,7 +281,10 @@ def _create_sg_entity(
         else:
             data = {
                 "project": sg_project,
-                parent_field: {"type": sg_parent_type, "id": int(sg_parent_id)},
+                parent_field: {
+                    "type": sg_parent_type,
+                    "id": int(sg_parent_id)
+                },
                 sg_field_name: ay_entity.name,
                 CUST_FIELD_CODE_ID: ay_entity.id,
             }
@@ -264,8 +295,7 @@ def _create_sg_entity(
         new_sg_entity = sg_session.create(sg_type, data)
         return new_sg_entity
     except Exception as e:
-        logging.error(f"Unable to create SG entity {sg_type} with data: {data}")
+        logging.error(
+            f"Unable to create SG entity {sg_type} with data: {data}")
         log_traceback(e)
         raise e
-
-

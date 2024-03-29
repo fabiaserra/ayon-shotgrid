@@ -54,4 +54,3 @@ class CollectShotgridSession(pyblish.api.ContextPlugin):
             local_storage_key = shotgrid_module.get_local_storage_key()
             self.log.info(f"Using local storage entry {local_storage_key}")
             context.data["shotgridLocalStorageKey"] = local_storage_key
-        
