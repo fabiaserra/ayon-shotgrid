@@ -7,29 +7,9 @@ from openpype.lib import Logger
 
 logger = Logger.get_logger(__name__)
 
-# List of SG fields from context entities (i.e., Project, Shot) that we care to
-# query for delivery purposes
-SG_EXTRA_DELIVERY_FIELDS = [
-    # "sg_final_datatype",  # TODO: not used yet
-    "sg_final_fps",
-    "sg_final_tags",
-    "sg_review_fps",
-    "sg_review_lut",
-    "sg_review_tags",
-    "sg_review_resolution",
-    # "sg_review_reformat",  # TODO: not used yet
-    # "sg_review_scale",  # TODO: not used yet
-]
-
-SG_DELIVERY_NAME_FIELD = "sg_delivery_name"
-
 SG_DELIVERY_OUTPUT_FIELDS = [
     "sg_final_output_type",
     "sg_review_output_type",
-]
-
-SG_SLATE_FIELDS = [
-    "sg_slate_subtitle",
 ]
 
 # List of SG fields on the 'output_datatypes' entity that we care to query for
@@ -131,8 +111,7 @@ def get_entity_overrides(
 ):
     """Create a dictionary of relevant delivery fields for the given SG entity.
 
-    The returned dictionary includes overrides for the delivery fields defined
-    in SG_EXTRA_DELIVERY_FIELDS, as well as overrides for the sg_review_output and
+    The returned dictionary includes overrides for the sg_review_output and
     sg_final_output fields. The value for each of these fields is a dictionary
     of the ffmpeg arguments required to create each output type.
 
@@ -206,10 +185,7 @@ def get_entity_hierarchy_overrides(
     entity_id,
     entity_type,
     delivery_types,
-    query_delivery_names=False,
     query_representation_names=False,
-    query_extra_delivery_fields=False,
-    query_slate_fields=False,
     query_ffmpeg_args=False,
     stop_when_found=False,
 ):
@@ -222,10 +198,7 @@ def get_entity_hierarchy_overrides(
         entity_id (int): The ID of the ShotGrid entity to start the search from.
         entity_type (str): The type of the ShotGrid entity to start the search from.
         delivery_types (list): A list of delivery types to search for.
-        query_delivery_names (bool): Whether to query delivery names.
         query_representation_names (bool): Whether to query representation names.
-        query_extra_delivery_fields (bool): Whether to query extra delivery fields.
-        query_slate_fields (bool): Whether to query slate fields.
         query_ffmpeg_args (bool): Whether to query ffmpeg arguments of the output types.
         stop_when_found (bool): Whether to stop searching when a delivery override is
             found.
@@ -256,21 +229,10 @@ def get_entity_hierarchy_overrides(
     if query_representation_names or query_ffmpeg_args:
         base_query_fields.extend(SG_DELIVERY_OUTPUT_FIELDS)
 
-    if query_delivery_names:
-        base_query_fields.append(SG_DELIVERY_NAME_FIELD)
-
-    if query_extra_delivery_fields:
-        base_query_fields.extend(SG_EXTRA_DELIVERY_FIELDS)
-
     # If we are not requesting all delivery types we only keep the fields
     # that are specific to the delivery type being requested
     if len(delivery_types) == 1:
         base_query_fields = [f for f in base_query_fields if delivery_types[0] in f]
-
-    # We add the slate fields after the filter as those are independent of
-    # delivery type
-    if query_slate_fields:
-        base_query_fields.extend(SG_SLATE_FIELDS)
 
     # Create a dictionary of delivery overrides per entity
     for entity, query_field in iterator:
