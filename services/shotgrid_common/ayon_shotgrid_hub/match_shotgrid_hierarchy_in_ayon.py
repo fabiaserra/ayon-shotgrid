@@ -15,7 +15,12 @@ from nxtools import logging, log_traceback
 
 
 def match_shotgrid_hierarchy_in_ayon(
-    entity_hub, sg_project, sg_session, sg_enabled_entities, project_code_field
+    entity_hub,
+    sg_project,
+    sg_session,
+    sg_enabled_entities,
+    project_code_field,
+    custom_attribs_map=None,
 ):
     """Replicate a Shotgrid project into AYON.
 
@@ -30,12 +35,18 @@ def match_shotgrid_hierarchy_in_ayon(
         sg_project (shotgun_api3.Shotgun): The Shotgrid session.
         project_code_field (str): The Shotgrid project code field.
     """
+    custom_fields = []
+    if custom_attribs_map:
+        for sg_attrib in custom_attribs_map.values():
+            custom_fields.extend([f"sg_{sg_attrib}", sg_attrib])
 
     sg_entities_by_id, sg_entities_by_parent_id = get_sg_entities(
         sg_session,
         sg_project,
         sg_enabled_entities,
-        project_code_field=project_code_field
+        custom_fields=custom_fields,
+        project_code_field=project_code_field,
+        custom_attribs_map=custom_attribs_map,
     )
 
     sg_entities_deck = collections.deque()
@@ -98,9 +109,9 @@ def match_shotgrid_hierarchy_in_ayon(
                 "Making sure the stored Shotgrid Data matches."
             )
 
-            ay_shotgrid_id_attrib = ay_entity.attribs.get_attribute(
+            ay_shotgrid_id_attrib = ay_entity.attribs.get(
                 SHOTGRID_ID_ATTRIB
-            ).value
+            )
 
             if ay_shotgrid_id_attrib != str(sg_entity["attribs"][SHOTGRID_ID_ATTRIB]): # noqa
                 logging.error(
@@ -111,6 +122,20 @@ def match_shotgrid_hierarchy_in_ayon(
                 sg_entity_sync_status = "Failed"
                 sg_project_sync_status = "Failed"
                 continue
+        
+        if custom_attribs_map:
+            for ay_attr, sg_attr in custom_attribs_map.items():
+                sg_value = sg_entity.get(sg_attr) or sg_entity.get(f"sg_{sg_attr}")
+
+                # If no value in SG entity skip
+                if sg_value is None:
+                    logging.debug(
+                        f"Couldn't find value for '{sg_attr}' in entity '{sg_entity['name']}'"
+                    )
+                    continue
+                
+                # TODO: Is this + commit_changes enough to update the ayon entity?
+                ay_entity.attribs[ay_attr] = sg_value
 
         # Update SG entity with new created data
         sg_entity["data"][CUST_FIELD_CODE_ID] = ay_entity.id
