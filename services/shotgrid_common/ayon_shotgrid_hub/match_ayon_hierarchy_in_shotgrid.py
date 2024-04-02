@@ -150,16 +150,24 @@ def match_ayon_hierarchy_in_shotgrid(
 
     # Sync project attributes from Ayon to SG
     if custom_attribs_map:
+        logging.debug("Syncing custom attributes to SG project entity")
         for ay_attrib, sg_attrib in custom_attribs_map.items():
             if ay_attrib == "status":
                 attrib_value = entity_hub.project_entity.get(ay_attrib)
             else:
                 attrib_value = entity_hub.project_entity.attribs.get(ay_attrib)
             
+            logging.debug(f"Checking {ay_attrib} -> {attrib_value}")
             if attrib_value is None:
                 continue
-
-            data_to_update[sg_attrib] = attrib_value
+        
+            exists = check_sg_attribute_exists(sg_session, "Project", sg_attrib)
+            if not exists:
+                sg_attrib = f"sg_{sg_attrib}"
+                exists = check_sg_attribute_exists(sg_session, "Project", sg_attrib)
+            
+            if exists:
+                data_to_update[sg_attrib] = attrib_value
 
     sg_session.update(
         "Project",
@@ -243,15 +251,11 @@ def _create_new_entity(
         if (sg_parent_field != "project" and sg_parent_entity["type"] != "Project"):
             data[sg_parent_field] = sg_parent_entity
 
-
     # Fill up data with any extra attributes from Ayon we want to sync to SG
     if custom_attribs_map:
         for ayon_attrib, sg_attrib in custom_attribs_map.items():
             attrib_value = ay_entity.attribs.get(ayon_attrib)
             if not attrib_value:
-                logging.debug(
-                    f"Couldn't find value for '{ayon_attrib}' in entity '{ay_entity.name}'"
-                )
                 continue
 
             exists = check_sg_attribute_exists(sg_session, sg_type, sg_attrib)

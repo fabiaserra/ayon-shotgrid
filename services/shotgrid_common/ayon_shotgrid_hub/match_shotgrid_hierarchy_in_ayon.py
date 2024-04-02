@@ -124,14 +124,14 @@ def match_shotgrid_hierarchy_in_ayon(
                 continue
         
         if custom_attribs_map:
+            logging.debug("Syncing custom attributes to Ayon project entity")
             for ay_attr, sg_attr in custom_attribs_map.items():
                 sg_value = sg_entity.get(sg_attr) or sg_entity.get(f"sg_{sg_attr}")
 
+                logging.debug(f"Checking {sg_attr} -> {sg_value}")
+
                 # If no value in SG entity skip
                 if sg_value is None:
-                    logging.debug(
-                        f"Couldn't find value for '{sg_attr}' in entity '{sg_entity['name']}'"
-                    )
                     continue
                 
                 # TODO: Is this + commit_changes enough to update the ayon entity?
