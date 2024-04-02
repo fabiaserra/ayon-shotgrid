@@ -183,7 +183,6 @@ class AyonShotgridHub:
         custom_fields = [
             self.sg_project_code_field,
             CUST_FIELD_CODE_AUTO_SYNC,
-            "sg_status"
         ]
         for attrib in self.custom_attribs_map.values():
             custom_fields.extend([f"sg_{attrib}", attrib])

@@ -171,10 +171,6 @@ def match_shotgrid_hierarchy_in_ayon(
             attrib_value
         )
 
-    # Hard-code the query of status for SG project as it's different
-    # than the other entities
-    entity_hub.project_entity.status = sg_project.get("sg_status")
-
     entity_hub.commit_changes()
 
     # Update Shotgrid project with Ayon ID and sync status

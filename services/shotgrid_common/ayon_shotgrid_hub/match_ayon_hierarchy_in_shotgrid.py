@@ -150,8 +150,7 @@ def match_ayon_hierarchy_in_shotgrid(
     # Sync project attributes from AYON to ShotGrid
     data_to_update = {
         CUST_FIELD_CODE_ID: entity_hub.project_name,
-        CUST_FIELD_CODE_SYNC: ay_project_sync_status,
-        "sg_status": entity_hub.project_entity.status,
+        CUST_FIELD_CODE_SYNC: ay_project_sync_status
     }
     data_to_update.update(get_sg_custom_attributes_data(
         sg_session,
