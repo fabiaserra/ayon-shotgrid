@@ -80,13 +80,11 @@ def _sg_to_ay_dict(
         }
     }
     if custom_attribs_map:
-        logging.debug("Checking custom attribs map")
         for ay_attrib, sg_attrib in custom_attribs_map.items():
             sg_value = sg_entity.get(sg_attrib) or sg_entity.get(f"sg_{sg_attrib}")
 
             # If no value in SG entity skip
             if sg_value is None:
-                logging.debug("No value found for %s:%s" % (ay_attrib, sg_attrib))
                 continue
             
             sg_ay_dict["attribs"][ay_attrib] = sg_value
@@ -885,7 +883,6 @@ def get_sg_custom_attributes_data(
         else:
             attrib_value = ay_entity["attribs"].get(ay_attrib)
         
-        logging.debug(f"Checking {ay_attrib} -> {attrib_value}")
         if attrib_value is None:
             continue
         
