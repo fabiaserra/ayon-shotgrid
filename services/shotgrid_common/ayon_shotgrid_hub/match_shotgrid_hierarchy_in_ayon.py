@@ -182,7 +182,9 @@ def match_shotgrid_hierarchy_in_ayon(
 
     # Sync project attributes from Shotgrid to Ayon
     if custom_attribs_map:
-        logging.debug("Syncing custom attributes to Ayon project entity")
+        logging.debug(
+            f"Syncing custom attributes to Ayon project entity {custom_attribs_map}"
+        )
 
         for ay_attrib, sg_attrib in custom_attribs_map.items():
             attrib_value = sg_entity["attribs"].get(sg_attrib) \
