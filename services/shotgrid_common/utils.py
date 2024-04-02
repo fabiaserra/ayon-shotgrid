@@ -3,7 +3,6 @@ from typing import Dict, Optional
 
 from constants import (
     AYON_SHOTGRID_ATTRIBUTES_MAP,
-    AYON_SHOTGRID_ENTITY_TYPE_MAP,
     CUST_FIELD_CODE_ID,
     CUST_FIELD_CODE_SYNC,
     SG_COMMON_ENTITY_FIELDS,
