@@ -150,10 +150,16 @@ def match_shotgrid_hierarchy_in_ayon(
             sg_ay_dicts_deck.append((ay_entity, sg_child))
 
     # Sync project attributes from Shotgrid to Ayon
-    data_to_update = {
-        SHOTGRID_ID_ATTRIB: sg_project["id"],
-        SHOTGRID_TYPE_ATTRIB: "Project"
-    }
+    entity_hub.project_entity.attribs.set(
+        SHOTGRID_ID_ATTRIB,
+        sg_project["id"]
+    )
+
+    entity_hub.project_entity.attribs.set(
+        SHOTGRID_TYPE_ATTRIB,
+        "Project"
+    )
+
     for ay_attrib, sg_attrib in custom_attribs_map.items():
         attrib_value = sg_project.get(sg_attrib) \
             or sg_project.get(f"sg_{sg_attrib}")
@@ -165,14 +171,11 @@ def match_shotgrid_hierarchy_in_ayon(
         if ay_attrib == "status":
             entity_hub.project_entity.status = attrib_value
         else:
-            data_to_update[ay_attrib] = attrib_value
+            entity_hub.project_entity.attribs.set(
+                ay_attrib,
+                attrib_value
+            )
 
-    logging.debug(
-        f"Updating Ayon project entity with: {data_to_update}"
-    )
-    entity_hub.project_entity.attribs.update(
-        data_to_update
-    )
     entity_hub.commit_changes()
 
     # Update Shotgrid project with Ayon ID and sync status
