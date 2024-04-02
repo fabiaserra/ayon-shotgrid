@@ -93,6 +93,7 @@ class AyonShotgridHub:
             self.sg_project_code_field = sg_project_code_field
         else:
             self.sg_project_code_field = "code"
+            
         self.custom_attribs_map = {
             "status": "status_list",
             "tags": "tags"
@@ -181,11 +182,11 @@ class AyonShotgridHub:
 
         custom_fields = [
             self.sg_project_code_field,
-            CUST_FIELD_CODE_AUTO_SYNC
+            CUST_FIELD_CODE_AUTO_SYNC,
+            "sg_status"
         ]
-        if self.custom_attribs_map:
-            for attrib in self.custom_attribs_map.values():
-                custom_fields.extend([f"sg_{attrib}", attrib])
+        for attrib in self.custom_attribs_map.values():
+            custom_fields.extend([f"sg_{attrib}", attrib])
 
         try:
             self._sg_project = get_sg_project_by_name(
@@ -220,8 +221,6 @@ class AyonShotgridHub:
             self._ay_project = EntityHub(self.project_name)
             self._ay_project.query_entities_from_server()
 
-            # TODO: add custom attributes on creation
-
         self._ay_project.commit_changes()
 
         if self._sg_project is None:
@@ -247,8 +246,6 @@ class AyonShotgridHub:
             )
             self._ay_project.commit_changes()
             
-            # TODO: add custom attributes on creation
-
         self.create_sg_attributes()
         logging.info(f"Project {self.project_name} ({self.project_code}) available in SG and AYON.")
 
