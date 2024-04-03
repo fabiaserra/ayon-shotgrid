@@ -76,6 +76,9 @@ def match_ayon_hierarchy_in_shotgrid(
         ):
             sg_entity_id = ay_entity.attribs.get(SHOTGRID_ID_ATTRIB, None)
             sg_entity_type = ay_entity.attribs.get(SHOTGRID_TYPE_ATTRIB, "")
+            logging.debug(f"SG Entity id: {sg_entity_id}")
+            logging.debug(f"SG Entity type: {sg_entity_type}")
+            logging.debug(sg_ay_dicts.keys())
 
             if sg_entity_type == "AssetCategory":
                 continue
