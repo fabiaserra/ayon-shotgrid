@@ -851,7 +851,7 @@ def get_sg_tags(
             mapping the tag name to its id.
     """
     sg_tags = {
-        status["name"]: status["id"]
+        status["name"].lower(): status["id"]
         for status in sg_session.find("Status", [], fields=["name", "id"])
     }
     logging.debug(f"ShotGrid tags: {sg_tags}")

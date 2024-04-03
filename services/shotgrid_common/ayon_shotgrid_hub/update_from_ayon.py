@@ -165,13 +165,13 @@ def update_sg_entity_from_ayon_event(
                 new_attribs = {"tags": {}}
                 sg_tags = get_sg_tags(sg_session)
                 for tag_name in tags_event_list:
-                    if tag_name in sg_tags:
+                    if tag_name.lower() in sg_tags:
                         new_attribs["tags"] = {
                             "name": tag_name, "id": sg_tags[tag_name]
                         }
                     else:
                         logging.info(
-                            f"Tag '{new_attribs}' not found in ShotGrid, "
+                            f"Tag '{tag_name}' not found in ShotGrid, "
                             "creating a new one."
                         )
                         new_tag = sg_session.create("Tag", {'name': tag_name})
