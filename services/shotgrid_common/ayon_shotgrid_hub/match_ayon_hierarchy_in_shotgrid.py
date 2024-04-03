@@ -102,7 +102,10 @@ def match_ayon_hierarchy_in_shotgrid(
                     else:
                         # Update SG entity custom attributes with AYON data
                         data_to_update = get_sg_custom_attributes_data(
-                            sg_session, ay_entity, sg_entity_type, custom_attribs_map
+                            sg_session,
+                            ay_entity.attribs.to_dict(),
+                            sg_entity_type,
+                            custom_attribs_map
                         )
                         if data_to_update:
                             logging.info("Syncing custom attributes on entity.")
@@ -154,7 +157,7 @@ def match_ayon_hierarchy_in_shotgrid(
     }
     data_to_update.update(get_sg_custom_attributes_data(
         sg_session,
-        entity_hub.project_entity,
+        entity_hub.project_entity.attribs.to_dict(),
         "Project",
         custom_attribs_map
     ))
@@ -243,7 +246,7 @@ def _create_new_entity(
     # Fill up data with any extra attributes from Ayon we want to sync to SG
     data.update(get_sg_custom_attributes_data(
         sg_session,
-        ay_entity,
+        ay_entity.attribs.to_dict(),
         sg_type,
         custom_attribs_map
     ))
