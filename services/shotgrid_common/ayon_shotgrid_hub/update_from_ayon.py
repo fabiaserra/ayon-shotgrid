@@ -4,6 +4,7 @@
 from utils import (
     get_sg_entity_parent_field,
     get_sg_statuses,
+    get_sg_tags,
     get_sg_custom_attributes_data
 )
 from constants import (
@@ -160,7 +161,22 @@ def update_sg_entity_from_ayon_event(
                     )
                     return
             elif ayon_event["topic"].endswith("tags_changed"):
-                new_attribs = {"tags": new_attribs}
+                sg_tags = get_sg_tags()
+                for sg_tag_name, sg_tag_id in sg_tags.items():
+                    if new_attribs.lower() == sg_tag_name.lower():
+                        new_attribs = {
+                            "tags": {"name": sg_tag_name, "id": sg_tag_id}
+                        }
+                        break
+                else:
+                    logging.info(
+                        f"Tag '{new_attribs}' not found in ShotGrid, "
+                        "creating a new one."
+                    )
+                    new_tag = sg_session.create("Tag", {'name': new_attribs})
+                    new_attribs = {
+                        "tags": {"name": new_attribs, "id": new_tag["id"]}
+                    }
             else:
                 logging.warning("Unknown event type, skipping update of custom attribs.")
                 new_attribs = None
