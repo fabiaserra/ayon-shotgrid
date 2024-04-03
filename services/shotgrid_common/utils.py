@@ -922,11 +922,11 @@ def update_ay_entity_custom_attributes(
     values_to_update: Optional[list] = None,
 ):
     """Update Ayon entity custom attributes from ShotGrid dictionary"""
-    for ay_attrib, sg_attrib in custom_attribs_map.items():
+    for ay_attrib, _ in custom_attribs_map.items():
         if values_to_update and ay_attrib not in values_to_update:
             continue
         
-        attrib_value = sg_ay_dict["attribs"].get(sg_attrib)
+        attrib_value = sg_ay_dict["attribs"].get(ay_attrib)
         if attrib_value is None:
             continue
 
@@ -934,6 +934,7 @@ def update_ay_entity_custom_attributes(
             logging.warning("Tags update is not supported yet.")
             ay_entity.tags = [tag["name"] for tag in attrib_value]
         elif ay_attrib == "status":
+            logging.warning("Status update is not supported yet.")
             ay_entity.status = attrib_value
         else:
             ay_entity.attribs.set(ay_attrib, attrib_value)
