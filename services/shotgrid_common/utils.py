@@ -895,7 +895,7 @@ def get_sg_custom_attributes_data(
         if ay_attrib in ["status", "tags"]:
             attrib_value = ay_entity.get(ay_attrib)
         else:
-            attrib_value = ay_entity["attribs"].get(ay_attrib)
+            attrib_value = ay_entity.get("attribs", {}).get(ay_attrib)
         
         if attrib_value is None:
             continue
