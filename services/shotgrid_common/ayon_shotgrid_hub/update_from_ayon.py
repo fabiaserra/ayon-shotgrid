@@ -162,22 +162,23 @@ def update_sg_entity_from_ayon_event(
                     return
             elif ayon_event["topic"].endswith("tags_changed"):
                 tags_event_list = new_attribs
-                new_attribs = {"tags": {}}
+                new_attribs = {"tags": []}
                 sg_tags = get_sg_tags(sg_session)
                 for tag_name in tags_event_list:
                     if tag_name.lower() in sg_tags:
-                        new_attribs["tags"] = {
-                            "name": tag_name, "id": sg_tags[tag_name]
-                        }
+                        new_attribs["tags"].append(
+                            {"name": tag_name, "id": sg_tags[tag_name]}
+                        )
                     else:
                         logging.info(
                             f"Tag '{tag_name}' not found in ShotGrid, "
                             "creating a new one."
                         )
                         new_tag = sg_session.create("Tag", {'name': tag_name})
-                        new_attribs["tags"] = {
-                            "name": tag_name, "id": new_tag["id"]
-                        }
+                        new_attribs["tags"].append(
+                            {"name": tag_name, "id": new_tag["id"]}
+                        )
+
             else:
                 logging.warning("Unknown event type, skipping update of custom attribs.")
                 new_attribs = None
