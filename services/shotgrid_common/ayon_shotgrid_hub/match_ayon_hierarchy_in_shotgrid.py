@@ -82,7 +82,7 @@ def match_ayon_hierarchy_in_shotgrid(
             logging.debug(sg_entity_id in sg_ay_dicts)
             logging.debug(sg_entity_id in sg_ay_dicts.keys())
             logging.debug(type(sg_entity_id))
-            logging.debug(type(next(sg_ay_dicts.keys())))
+            logging.debug(type(sg_ay_dicts.keys()[0]))
 
 
             if sg_entity_type == "AssetCategory":
