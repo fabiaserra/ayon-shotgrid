@@ -32,8 +32,9 @@ def _sg_to_ay_dict(
 
     Args:
         sg_entity (dict): Shotgun Entity dict representation.
-        project_code_field (str): The Shotgrid project code field.
-        custom_attribs_map (dict): Dictionary that maps names of attributes in AYON to Shotgrid equivalents.
+        project_code_field (str): The ShotGrid project code field.
+        custom_attribs_map (dict): Dictionary that maps names of attributes in
+            AYON to ShotGrid equivalents.
     """
     logging.debug(f"Transforming sg_entity '{sg_entity}' to ayon dict.")
 
@@ -94,6 +95,8 @@ def _sg_to_ay_dict(
     elif folder_type:
         sg_ay_dict["folder_type"] = folder_type
 
+    logging.debug(f"Transformed sg_entity as ayon dict: {sg_ay_dict}")
+    
     return sg_ay_dict
 
 
@@ -110,9 +113,9 @@ def create_ay_fields_in_sg_entities(
 
     Args:
         sg_session (shotgun_api3.Shotgun): Instance of a ShotGrid API Session.
-        sg_entities (list): List of Shotgrid entities to create the fields in.
+        sg_entities (list): List of ShotGrid entities to create the fields in.
         custom_attribs_map (dict): Dictionary that maps names of attributes in
-            AYON to Shotgrid equivalents.
+            AYON to ShotGrid equivalents.
         custom_attribs_types (dict): Dictionary that contains a tuple for each
             attribute containing the type of data and the scope of the attribute.
     """
@@ -153,13 +156,13 @@ def create_ay_custom_attribs_in_sg_entity(
     custom_attribs_map: dict,
     custom_attribs_types: dict
 ):
-    """Create Ayon custom attributes in Shotgrid entities.
+    """Create Ayon custom attributes in ShotGrid entities.
 
     Args:
-        sg_session (shotgun_api3.Shotgun): Instance of a Shotgrid API Session.
-        sg_entities (list): List of Shotgrid entities to create the fields in.
+        sg_session (shotgun_api3.Shotgun): Instance of a ShotGrid API Session.
+        sg_entities (list): List of ShotGrid entities to create the fields in.
         custom_attribs_map (dict): Dictionary that maps names of attributes in
-            AYON to Shotgrid equivalents.
+            AYON to ShotGrid equivalents.
         custom_attribs_types (dict): Dictionary that contains a tuple for each
             attribute containing the type of data and the scope of the attribute.
     """
@@ -191,6 +194,9 @@ def create_ay_custom_attribs_in_sg_entity(
         # If it doesn't exist, we create a custom attribute on the
         # SG entity by prefixing it with "sg_"
         if not exists:
+            logging.debug(
+                f"Creating ShotGrid field for {sg_attrib} on entity {sg_entity_type}"
+            )
             get_or_create_sg_field(
                 sg_session,
                 sg_entity_type,
@@ -204,14 +210,14 @@ def create_ay_fields_in_sg_project(
     custom_attribs_map: dict,
     custom_attribs_types: dict
 ):
-    """Create Ayon Project fields in Shotgrid.
+    """Create Ayon Project fields in ShotGrid.
 
     This will create Project Unique attributes into ShotGrid.
 
     Args:
         sg_session (shotgun_api3.Shotgun): Instance of a ShotGrid API Session.
         custom_attribs_map (dict): Dictionary that maps names of attributes in
-            AYON to Shotgrid equivalents.
+            AYON to ShotGrid equivalents.
         custom_attribs_types (dict): Dictionary that contains a tuple for each
             attribute containing the type of data and the scope of the attribute.
     """
@@ -374,7 +380,7 @@ def get_or_create_sg_field(
 
     if not attribute_exists:
         logging.debug(
-            f"Shotgrid field {sg_entity_type} > {field_code} does not exist."
+            f"ShotGrid field {sg_entity_type} > {field_code} does not exist."
         )
 
         try:
@@ -438,11 +444,11 @@ def get_sg_entities(
 
     Args:
         sg_session (shotgun_api3.Shotgun): Shotgun Session object.
-        sg_project (dict): The Shotgrid project to query its entities.
-        sg_enabled_entities (list): List of Shotgrid entities to query.
-        project_code_field (str): The Shotgrid project code field.
+        sg_project (dict): The ShotGrid project to query its entities.
+        sg_enabled_entities (list): List of ShotGrid entities to query.
+        project_code_field (str): The ShotGrid project code field.
         custom_attribs_map (dict): Dictionary that maps names of attributes in
-            AYON to Shotgrid equivalents.
+            AYON to ShotGrid equivalents.
         extra_fields (list): List of extra fields to pass to the query.
 
     Returns:
@@ -564,8 +570,9 @@ def get_sg_entity_as_ay_dict(
         sg_session (shotgun_api3.Shotgun): Shotgun Session object.
         sg_type (str): The ShotGrid entity type.
         sg_id (int): ShotGrid ID of the entity to query.
-        project_code_field (str): The Shotgrid project code field.
-        custom_attribs_map (dict): Dictionary that maps names of attributes in AYON to Shotgrid equivalents.
+        project_code_field (str): The ShotGrid project code field.
+        custom_attribs_map (dict): Dictionary that maps names of attributes in
+            AYON to ShotGrid equivalents.
         extra_fields (Optional[list]): List of optional fields to query.
         retired_only (bool): Whether to return only retired entities.
     Returns:
@@ -602,7 +609,6 @@ def get_sg_entity_as_ay_dict(
         sg_entity, project_code_field, custom_attribs_map
     )
 
-    # TODO: add missing sg_status_list?
     for field in extra_fields:
         sg_value = sg_entity.get(field)
         # If no value in SG entity skip
@@ -821,7 +827,7 @@ def get_sg_statuses(
     if sg_entity_type:
         entity_status = sg_session.schema_field_read(sg_entity_type, "sg_status_list")
         sg_statuses = entity_status["sg_status_list"]["properties"]["display_values"]["value"]
-        logging.debug(f"Shotgrid Statuses supported by {sg_entity_type}: {sg_statuses}")
+        logging.debug(f"ShotGrid Statuses supported by {sg_entity_type}: {sg_statuses}")
         return sg_statuses
     
     sg_statuses = {
@@ -883,9 +889,9 @@ def get_sg_custom_attributes_data(
     Args:
         sg_session (shotgun_api3.Shotgun): Instance of a Shotgrid API Session.
         sg_entity (dict): Dictionary that holds the Ayon entity data that we
-            want to sync to Shotgrid.
+            want to sync to ShotGrid.
         custom_attribs_map (dict): Dictionary that maps names of attributes in
-            AYON to Shotgrid equivalents.
+            AYON to ShotGrid equivalents.
     """
     data_to_update = {}
     for ay_attrib, sg_attrib in custom_attribs_map.items():
@@ -918,7 +924,7 @@ def update_ay_entity_custom_attributes(
     custom_attribs_map: dict,
     values_to_update: Optional[list] = None,
 ):
-    """Update Ayon entity custom attributes from Shotgrid dictionary"""
+    """Update Ayon entity custom attributes from ShotGrid dictionary"""
     for ay_attrib, sg_attrib in custom_attribs_map.items():
         if values_to_update and ay_attrib not in values_to_update:
             continue
@@ -929,6 +935,7 @@ def update_ay_entity_custom_attributes(
 
         if ay_attrib == "tags":
             logging.warning("Tags update is not supported yet.")
+            ay_entity.tags = [tag["name"] for tag in attrib_value]
         elif ay_attrib == "status":
             ay_entity.status = attrib_value
         else:

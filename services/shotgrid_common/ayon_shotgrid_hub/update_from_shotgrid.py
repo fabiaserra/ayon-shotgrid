@@ -57,8 +57,8 @@ def create_ay_entity_from_sg_event(
         ayon_entity_hub (ayon_api.entity_hub.EntityHub): The AYON EntityHub.
         sg_enabled_entities (list[str]): List of entity strings enabled.
         project_code_field (str): The Shotgrid project code field.
-        custom_attribs_map (dict): Dictionary that maps a list of attribute names from
-            Ayon to Shotgrid.
+        custom_attribs_map (dict): Dictionary that maps a list of attribute
+            names from AYON to Shotgrid.
 
     Returns:
         ay_entity (ayon_api.entity_hub.EntityHub.Entity): The newly
