@@ -72,7 +72,7 @@ def _sg_to_ay_dict(
         "label": label,
         "name": name,
         "attribs": {
-            SHOTGRID_ID_ATTRIB: str(sg_entity["id"]),
+            SHOTGRID_ID_ATTRIB: sg_entity["id"],
             SHOTGRID_TYPE_ATTRIB: sg_entity["type"],
         },
         "data": {

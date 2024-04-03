@@ -74,7 +74,14 @@ def match_ayon_hierarchy_in_shotgrid(
             (ay_entity.entity_type == "folder" and ay_entity.folder_type != "Folder")
             or ay_entity.entity_type == "task"
         ):
-            sg_entity_id = str(ay_entity.attribs.get(SHOTGRID_ID_ATTRIB, None))
+            sg_entity_id = ay_entity.attribs.get(SHOTGRID_ID_ATTRIB, None)
+            try:
+                # Attempt to convert the string to an integer
+                sg_entity_id = int(sg_entity_id)
+            except ValueError:
+                logging.debug(
+                    f"Cannot convert entity id to integer. Treating as a string: {sg_entity_id}",
+                )
             sg_entity_type = ay_entity.attribs.get(SHOTGRID_TYPE_ATTRIB, "")
             logging.debug(f"SG Entity id: {sg_entity_id}")
             logging.debug(f"SG Entity type: {sg_entity_type}")
