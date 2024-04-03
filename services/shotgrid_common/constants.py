@@ -40,7 +40,7 @@ AYON_SHOTGRID_ENTITY_TYPE_MAP = {
     "Project": "project",
     "Episode": "folder",
     "Sequence": "folder",
-    # "Scene": "folder",
+    "Scene": "folder",
     "Shot": "folder",
     "Asset": "folder",
     "Task": "task",

@@ -145,7 +145,6 @@ class ShotgridListener:
             last_event_id = int(last_event_id["hash"])
 
         if not last_event_id:
-            logging.debug(f"Find the event id with filters: {sg_filters}")
             last_event = self.sg_session.find_one(
                 "EventLogEntry",
                 filters=sg_filters,

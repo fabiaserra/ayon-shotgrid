@@ -325,8 +325,8 @@ def remove_ayon_entity_from_sg_event(
         raise ValueError("Unable to update a non existing entity.")
 
     if sg_ay_dict["data"].get(CUST_FIELD_CODE_ID) != ay_entity.id:
-        logging.error("Mismatching Shotgrid IDs, aborting...")
-        raise ValueError("Mismatching Shotgrid IDs, aborting...")
+        logging.error("Mismatching ShotGrid IDs, aborting...")
+        raise ValueError("Mismatching ShotGrid IDs, aborting...")
 
     if not ay_entity.immutable_for_hierarchy:
         logging.info(f"Deleting AYON entity: {ay_entity}")
