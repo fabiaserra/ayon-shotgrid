@@ -74,7 +74,7 @@ def match_ayon_hierarchy_in_shotgrid(
             (ay_entity.entity_type == "folder" and ay_entity.folder_type != "Folder")
             or ay_entity.entity_type == "task"
         ):
-            sg_entity_id = ay_entity.attribs.get(SHOTGRID_ID_ATTRIB, None)
+            sg_entity_id = int(ay_entity.attribs.get(SHOTGRID_ID_ATTRIB, None))
             sg_entity_type = ay_entity.attribs.get(SHOTGRID_TYPE_ATTRIB, "")
             logging.debug(f"SG Entity id: {sg_entity_id}")
             logging.debug(f"SG Entity type: {sg_entity_type}")
