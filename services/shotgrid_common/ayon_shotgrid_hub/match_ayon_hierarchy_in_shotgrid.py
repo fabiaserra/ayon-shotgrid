@@ -53,13 +53,13 @@ def match_ayon_hierarchy_in_shotgrid(
     sg_ay_dicts_deck = collections.deque()
 
     # Append the project's direct children.
-    for sg_ay_dict_child in entity_hub._entities_by_parent_id[entity_hub.project_name]:
+    for ay_entity_child in entity_hub._entities_by_parent_id[entity_hub.project_name]:
         sg_ay_dicts_deck.append((
             get_sg_entity_as_ay_dict(
                 sg_session, "Project", sg_project["id"], project_code_field,
                 custom_attribs_map=custom_attribs_map
             ),
-            sg_ay_dict_child
+            ay_entity_child
         ))
 
     ay_project_sync_status = "Synced"
@@ -83,12 +83,14 @@ def match_ayon_hierarchy_in_shotgrid(
                     f"Cannot convert entity id to integer. Treating as a string: {sg_entity_id}",
                 )
             sg_entity_type = ay_entity.attribs.get(SHOTGRID_TYPE_ATTRIB, "")
+            
             logging.debug(f"SG Entity id: {sg_entity_id}")
             logging.debug(f"SG Entity type: {sg_entity_type}")
             logging.debug(sg_ay_dicts.keys())
             logging.debug(sg_entity_id in sg_ay_dicts)
             logging.debug(sg_entity_id in sg_ay_dicts.keys())
             logging.debug(type(sg_entity_id))
+
             for key in sg_ay_dicts.keys():
                 logging.debug(f"Key: {key} - {type(key)}")
 
