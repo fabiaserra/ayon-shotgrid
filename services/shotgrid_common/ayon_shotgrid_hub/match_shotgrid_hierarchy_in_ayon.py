@@ -218,8 +218,6 @@ def _create_new_entity(entity_hub, parent_entity, sg_ay_dict):
             parent_id=parent_entity.id,
             attribs=sg_ay_dict["attribs"],
             data=sg_ay_dict["data"],
-            status=sg_ay_dict["attribs"].get("status"),
-            tags=sg_ay_dict["attribs"].get("tags"),
         )
     else:
         ay_entity = entity_hub.add_new_folder(
@@ -230,9 +228,15 @@ def _create_new_entity(entity_hub, parent_entity, sg_ay_dict):
             parent_id=parent_entity.id,
             attribs=sg_ay_dict["attribs"],
             data=sg_ay_dict["data"],
-            status=sg_ay_dict["attribs"].get("status"),
-            tags=sg_ay_dict["attribs"].get("tags"),
         )
+    
+    status = sg_ay_dict["attribs"].get("status")
+    if status:
+        ay_entity.status = status
+
+    tags = sg_ay_dict["attribs"].get("tags")
+    if tags:
+        ay_entity.tags = [tag["name"] for tag in tags]
 
     logging.debug(f"Created new entity: {ay_entity.name} ({ay_entity.id})")
     logging.debug(f"Parent is: {parent_entity.name} ({parent_entity.id})")
