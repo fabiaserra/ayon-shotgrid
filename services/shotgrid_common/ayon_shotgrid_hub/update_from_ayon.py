@@ -161,7 +161,7 @@ def update_sg_entity_from_ayon_event(
                     )
                     return
             elif ayon_event["topic"].endswith("tags_changed"):
-                sg_tags = get_sg_tags()
+                sg_tags = get_sg_tags(sg_session)
                 for sg_tag_name, sg_tag_id in sg_tags.items():
                     if new_attribs.lower() == sg_tag_name.lower():
                         new_attribs = {
