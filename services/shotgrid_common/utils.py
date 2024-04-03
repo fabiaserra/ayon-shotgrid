@@ -409,6 +409,7 @@ def check_sg_attribute_exists(
     sg_session: shotgun_api3.Shotgun,
     sg_entity_type: str,
     field_code: str,
+    check_writable: bool = False,
 ) -> bool:
     """Validate whether given field code exists under that entity type"""
     try:
@@ -416,10 +417,12 @@ def check_sg_attribute_exists(
             sg_entity_type,
             field_name=field_code
         )
-        is_editable = schema_field["editable"]["value"]
-        # If attribute is not editable treat it as if it doesn't exist
-        if not is_editable:
-            return False
+        # If we are checking whether the attribute can be written to
+        # we check the "editable" key in the schema field
+        if check_writable:
+            is_writable = schema_field["editable"]["value"]
+            if not is_writable:
+                return False
 
         return schema_field
     except Exception:
@@ -935,12 +938,12 @@ def get_sg_custom_attributes_data(
             continue
         
         exists = check_sg_attribute_exists(
-            sg_session, sg_entity_type, sg_attrib
+            sg_session, sg_entity_type, sg_attrib, check_writable=True
         )
         if not exists:
             sg_attrib = f"sg_{sg_attrib}"
             exists = check_sg_attribute_exists(
-                sg_session, sg_entity_type, sg_attrib
+                sg_session, sg_entity_type, sg_attrib, check_writable=True
             )
         
         if exists:
