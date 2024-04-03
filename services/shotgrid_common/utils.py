@@ -412,11 +412,16 @@ def check_sg_attribute_exists(
 ) -> bool:
     """Validate whether given field code exists under that entity type"""
     try:
-        attribute_exists = sg_session.schema_field_read(
+        schema_field = sg_session.schema_field_read(
             sg_entity_type,
             field_name=field_code
         )
-        return attribute_exists
+        is_editable = schema_field.get("editable", True)
+        # If attribute is not editable treat it as if it doesn't exist
+        if not is_editable:
+            return False
+
+        return schema_field
     except Exception:
         # shotgun_api3.shotgun.Fault: API schema_field_read()
         pass
