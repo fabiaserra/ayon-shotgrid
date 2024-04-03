@@ -416,8 +416,7 @@ def check_sg_attribute_exists(
             sg_entity_type,
             field_name=field_code
         )
-        is_editable = schema_field.get("editable", True)
-        logging.debug(schema_field)
+        is_editable = schema_field["editable"]["value"]
         # If attribute is not editable treat it as if it doesn't exist
         if not is_editable:
             return False
