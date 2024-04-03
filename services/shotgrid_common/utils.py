@@ -194,9 +194,6 @@ def create_ay_custom_attribs_in_sg_entity(
         # If it doesn't exist, we create a custom attribute on the
         # SG entity by prefixing it with "sg_"
         if not exists:
-            logging.debug(
-                f"Creating ShotGrid field for {sg_attrib} on entity {sg_entity_type}"
-            )
             get_or_create_sg_field(
                 sg_session,
                 sg_entity_type,
