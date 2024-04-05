@@ -1,8 +1,8 @@
 from .main import (
-    ShotgridSettings,
+    ShotGridSettings,
 )
 
 
 __all__ = (
-    "ShotgridSettings",
+    "ShotGridSettings",
 )
