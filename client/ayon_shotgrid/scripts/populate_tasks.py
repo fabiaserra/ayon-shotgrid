@@ -1,8 +1,4 @@
-import copy
-
-from openpype.lib import Logger
-from openpype.client import get_asset_by_name
-from openpype.client.operations import OperationsSession
+from ayon_core.lib import Logger
 
 from ayon_shotgrid.lib import credentials
 

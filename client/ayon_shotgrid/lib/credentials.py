@@ -3,7 +3,7 @@ import getpass
 import shotgun_api3
 
 import ayon_api
-from openpype.lib import Logger
+from ayon_core.lib import Logger
 
 from ayon_shotgrid.version import __version__
 
@@ -53,14 +53,9 @@ def get_shotgrid_session():
     """
     sg_settings = ayon_api.get_addon_settings("shotgrid", __version__)
     sg_url = sg_settings["shotgrid_server"]
-    sg_secret = ayon_api.get_secret(sg_settings["shotgrid_api_secret"])
     
-    # Hack because of a bug in Ayon that returns a list sometimes
-    if isinstance(sg_secret, list):
-        sg_secret = sg_secret[0]
-
-    sg_script_name = sg_secret.get("name")
-    sg_api_key = sg_secret.get("value")
+    sg_script_name = sg_settings["shotgrid_api_name"]
+    sg_api_key = sg_settings["shotgrid_api_key"]
 
     if not sg_script_name and not sg_api_key:
         logger.error(
@@ -69,7 +64,7 @@ def get_shotgrid_session():
         )
 
     user = getpass.getuser()
-    proxy = os.environ.get("HTTPS_PROXY", "").lstrip("https://")
+    proxy = os.environ.get("HTTPS_PROXY", "").replace("https://", "")
 
     try:
         return create_sg_session(
