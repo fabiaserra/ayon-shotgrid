@@ -18,14 +18,10 @@ class ShotgridAddon(AYONAddon, IPluginPaths):
     def initialize(self, studio_settings):
         addon_settings = studio_settings.get(self.name, dict())
         self._shotgrid_server_url = addon_settings.get("shotgrid_server")
-
-    def initialize(self, modules_settings):
-        module_settings = modules_settings.get(self.name, dict())
-        self._shotgrid_server_url = module_settings.get("shotgrid_server")
-        self._shotgrid_script_name = module_settings["shotgrid_api_name"]
-        self._shotgrid_api_key = module_settings["shotgrid_api_key"]
-        self._enable_local_storage = module_settings.get("enable_shotgrid_local_storage")
-        self._local_storage_key = module_settings.get("local_storage_key")
+        self._shotgrid_script_name = addon_settings["shotgrid_api_name"]
+        self._shotgrid_api_key = addon_settings["shotgrid_api_key"]
+        self._enable_local_storage = addon_settings.get("enable_shotgrid_local_storage")
+        self._local_storage_key = addon_settings.get("local_storage_key")
 
     def get_sg_url(self):
         return self._shotgrid_server_url if self._shotgrid_server_url else None
