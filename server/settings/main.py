@@ -1,6 +1,6 @@
 from ayon_server.entities.core.attrib import attribute_library
 from ayon_server.settings import BaseSettingsModel, SettingsField
-from ayon_server.settings.enum import secrets_enum, anatomy_presets_enum
+from ayon_server.settings.enum import anatomy_presets_enum
 
 
 def get_default_folder_attributes():
