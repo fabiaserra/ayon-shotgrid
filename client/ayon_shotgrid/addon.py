@@ -14,7 +14,10 @@ SHOTGRID_MODULE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 class ShotgridAddon(AYONAddon, IPluginPaths):
     name = "shotgrid"
-    enabled = True
+
+    def initialize(self, studio_settings):
+        addon_settings = studio_settings.get(self.name, dict())
+        self._shotgrid_server_url = addon_settings.get("shotgrid_server")
 
     def initialize(self, modules_settings):
         module_settings = modules_settings.get(self.name, dict())
