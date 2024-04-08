@@ -64,15 +64,6 @@ class ShotgridServiceSettings(BaseSettingsModel):
         validate_default=False,
     )
 
-    ayon_service_user: str = SettingsField(
-        default="service",
-        title="AYON service user",
-        description=(
-            "The AYON user used in the services (the user corresponding to "
-            "the `AYON_API_KEY` set in the service)"
-        ),
-    )
-
 
 class AttributesMappingModel(BaseSettingsModel):
     _layout = "compact"
@@ -98,19 +89,23 @@ class AttributesMappingModel(BaseSettingsModel):
     )
 
 
-class ShotGridCompatibilitySettings(BaseSettingsModel):
+def _default_entities():
+    return [
+        "Project",
+        "Episode",
+        "Sequence",
+        "Shot",
+        "Asset",
+        "Task",
+    ]
+
+
+class ShotgridCompatibilitySettings(BaseSettingsModel):
     """ Settings to define relationships between ShotGrid and AYON.
     """
     shotgrid_enabled_entities: list[str] = SettingsField(
         title="ShotGrid Enabled Entities",
-        default=[
-            "Project",
-            "Episode",
-            "Sequence",
-            "Shot",
-            "Asset",
-            "Task",
-        ],
+        default_factory=_default_entities,
         enum_resolver=default_shotgrid_entities,
         description=(
             "The Entities that are enabled in ShotGrid, disable "
@@ -128,7 +123,7 @@ class ShotGridCompatibilitySettings(BaseSettingsModel):
     )
 
 
-class ShotGridSettings(BaseSettingsModel):
+class ShotgridSettings(BaseSettingsModel):
     """ShotGrid integration settings.
 
     Main setting for the AYON x ShotGrid integration, these need to be filled
@@ -198,8 +193,8 @@ class ShotGridSettings(BaseSettingsModel):
         enum_resolver=anatomy_presets_enum
     )
 
-    compatibility_settings: ShotGridCompatibilitySettings = SettingsField(
-        default_factory=ShotGridCompatibilitySettings,
+    compatibility_settings: ShotgridCompatibilitySettings = SettingsField(
+        default_factory=ShotgridCompatibilitySettings,
         title="ShotGrid <-> AYON compatibility Settings",
         description=(
             "All the settings that allow us to fine-grain the relation "
