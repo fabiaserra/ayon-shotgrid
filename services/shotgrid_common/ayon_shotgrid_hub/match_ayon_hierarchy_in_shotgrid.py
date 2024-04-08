@@ -83,16 +83,6 @@ def match_ayon_hierarchy_in_shotgrid(
                     f"Cannot convert entity id to integer. Treating as a string: {sg_entity_id}",
                 )
             sg_entity_type = ay_entity.attribs.get(SHOTGRID_TYPE_ATTRIB, "")
-            
-            logging.debug(f"SG Entity id: {sg_entity_id}")
-            logging.debug(f"SG Entity type: {sg_entity_type}")
-            logging.debug(sg_ay_dicts.keys())
-            logging.debug(sg_entity_id in sg_ay_dicts)
-            logging.debug(sg_entity_id in sg_ay_dicts.keys())
-            logging.debug(type(sg_entity_id))
-
-            for key in sg_ay_dicts.keys():
-                logging.debug(f"Key: {key} - {type(key)}")
 
             if sg_entity_type == "AssetCategory":
                 continue
