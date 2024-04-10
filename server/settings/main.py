@@ -23,7 +23,7 @@ def get_default_folder_attributes():
             "ayon": attr_name,
             "sg": "",
             "type": [attr_dict["type"]],
-            "scope": default_shotgrid_entities()
+            "scope": default_shotgrid_enabled_entities()
         }
 
         if attr_map not in attributes:
@@ -32,12 +32,22 @@ def get_default_folder_attributes():
     return attributes
 
 
-def default_shotgrid_entities():
-    """The entity types enabled in ShotGrid.
+def shotgrid_entities():
+    """The entity types that exist in ShotGrid."""
+    return [
+        "Project",
+        "Episode",
+        "Sequence",
+        "Scene",
+        "Shot",
+        "Asset",
+        "Task",
+        "Version",
+    ]
 
-    Return a list to be consumed by the `enum_resolver` in
-    `ShotgridCompatibilitySettings.shotgrid_enabled_entities`.
-    """
+
+def default_shotgrid_enabled_entities():
+    """The entity types in Shotgrid that are enabled by default in AYON."""
     return [
         "Project",
         "Episode",
@@ -84,20 +94,9 @@ class AttributesMappingModel(BaseSettingsModel):
     )
     scope: list[str] = SettingsField(
         title="Scope",
-        default_factory=list,
-        enum_resolver=default_shotgrid_entities
+        default_factory=default_shotgrid_enabled_entities,
+        enum_resolver=shotgrid_entities
     )
-
-
-def _default_entities():
-    return [
-        "Project",
-        "Episode",
-        "Sequence",
-        "Shot",
-        "Asset",
-        "Task",
-    ]
 
 
 class ShotgridCompatibilitySettings(BaseSettingsModel):
@@ -105,8 +104,8 @@ class ShotgridCompatibilitySettings(BaseSettingsModel):
     """
     shotgrid_enabled_entities: list[str] = SettingsField(
         title="ShotGrid Enabled Entities",
-        default_factory=_default_entities,
-        enum_resolver=default_shotgrid_entities,
+        default_factory=default_shotgrid_enabled_entities,
+        enum_resolver=shotgrid_entities,
         description=(
             "The Entities that are enabled in ShotGrid, disable "
             "any that you do not use."
