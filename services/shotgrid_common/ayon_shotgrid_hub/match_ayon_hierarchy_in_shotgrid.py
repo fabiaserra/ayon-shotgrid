@@ -145,7 +145,7 @@ def match_ayon_hierarchy_in_shotgrid(
             )
             ay_entity.attribs.set(
                 SHOTGRID_TYPE_ATTRIB,
-                sg_ay_dict["type"]
+                sg_ay_dict["attribs"][SHOTGRID_TYPE_ATTRIB]
             )
             entity_hub.commit_changes()
 
