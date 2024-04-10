@@ -3,6 +3,33 @@ from ayon_server.settings import BaseSettingsModel, SettingsField
 from ayon_server.settings.enum import anatomy_presets_enum
 
 
+def default_shotgrid_entities():
+    """The entity types that exist in ShotGrid."""
+    return [
+        "Project",
+        "Episode",
+        "Sequence",
+        "Scene",
+        "Shot",
+        "Asset",
+        "Task",
+        "Version",
+    ]
+
+
+def default_shotgrid_enabled_entities():
+    """The entity types in ShotGrid that are enabled by default in AYON."""
+    return [
+        "Project",
+        "Episode",
+        "Sequence",
+        "Shot",
+        "Asset",
+        "Task",
+        "Version",
+    ]
+
+
 def get_default_folder_attributes():
     """Get AYON's Folder attributes
 
@@ -22,7 +49,7 @@ def get_default_folder_attributes():
         attr_map = {
             "ayon": attr_name,
             "sg": "",
-            "type": [attr_dict["type"]],
+            "type": attr_dict["type"],
             "scope": default_shotgrid_enabled_entities()
         }
 
@@ -30,33 +57,6 @@ def get_default_folder_attributes():
             attributes.append(attr_map)
 
     return attributes
-
-
-def shotgrid_entities():
-    """The entity types that exist in ShotGrid."""
-    return [
-        "Project",
-        "Episode",
-        "Sequence",
-        "Scene",
-        "Shot",
-        "Asset",
-        "Task",
-        "Version",
-    ]
-
-
-def default_shotgrid_enabled_entities():
-    """The entity types in Shotgrid that are enabled by default in AYON."""
-    return [
-        "Project",
-        "Episode",
-        "Sequence",
-        "Shot",
-        "Asset",
-        "Task",
-        "Version",
-    ]
 
 
 class ShotgridServiceSettings(BaseSettingsModel):
@@ -78,26 +78,16 @@ class ShotgridServiceSettings(BaseSettingsModel):
 class AttributesMappingModel(BaseSettingsModel):
     _layout = "compact"
     ayon: str = SettingsField(title="AYON")
-    sg: str = SettingsField(title="SG")
-    # TODO: how do you make this a single selectable entry
-    type: list[str] = SettingsField(
-        title="Type",
-        default_factory=list,
-        enum_resolver=lambda: [
-            "string",
-            "integer",
-            "float",
-            "list_of_strings",
-            "boolean",
-            "datetime",
-        ]
+    type: str = SettingsField(
+        title="Field type",
+        disabled=True,
     )
+    sg: str = SettingsField(title="SG")
     scope: list[str] = SettingsField(
         title="Scope",
         default_factory=default_shotgrid_enabled_entities,
-        enum_resolver=shotgrid_entities
+        enum_resolver=default_shotgrid_entities
     )
-
 
 class ShotgridCompatibilitySettings(BaseSettingsModel):
     """ Settings to define relationships between ShotGrid and AYON.
@@ -105,7 +95,7 @@ class ShotgridCompatibilitySettings(BaseSettingsModel):
     shotgrid_enabled_entities: list[str] = SettingsField(
         title="ShotGrid Enabled Entities",
         default_factory=default_shotgrid_enabled_entities,
-        enum_resolver=shotgrid_entities,
+        enum_resolver=default_shotgrid_entities,
         description=(
             "The Entities that are enabled in ShotGrid, disable "
             "any that you do not use."
@@ -116,8 +106,9 @@ class ShotgridCompatibilitySettings(BaseSettingsModel):
         title="Folder Attributes Map",
         default_factory=get_default_folder_attributes,
         description=(
-          "AYON attributes <> ShotGrid fields (without 'sg_' prefix!) "
-          "mapping. Empty ones will be ignored."
+            "AYON attributes <> ShotGrid fields (without 'sg_' prefix!) "
+            "mapping. Empty ones will be ignored. Scope is the list of "
+            "ShotGrid entities that the mapping applies to. Disable any."
         ),
     )
 
@@ -158,6 +149,7 @@ class ShotgridSettings(BaseSettingsModel):
     shotgrid_project_code_field: str = SettingsField(
         default="code",
         title="ShotGrid Project Code field name",
+        disabled=True,
         description=(
             "In order to create AYON projects, we need a Project Code, you "
             "can specify here which field in the ShotGrid Project "

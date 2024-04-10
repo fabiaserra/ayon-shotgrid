@@ -230,6 +230,7 @@ def _create_new_entity(entity_hub, parent_entity, sg_ay_dict):
             data=sg_ay_dict["data"],
         )
     
+    # TODO: this doesn't work yet
     status = sg_ay_dict["attribs"].get("status")
     if status:
         ay_entity.status = status
