@@ -85,7 +85,7 @@ class AttributesMappingModel(BaseSettingsModel):
     sg: str = SettingsField(title="SG")
     scope: list[str] = SettingsField(
         title="Scope",
-        default_factory=default_shotgrid_enabled_entities,
+        default_factory=list,
         enum_resolver=default_shotgrid_entities
     )
 
