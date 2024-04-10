@@ -37,9 +37,6 @@ class ShotgridTransmitter:
             self.sg_script_name = self.settings["shotgrid_api_name"]
             self.sg_api_key = self.settings["shotgrid_api_key"]
 
-            self.ayon_service_user = \
-                self.settings["service_settings"]["ayon_service_user"]
-
             # Compatibility settings
             custom_attribs_map = self.settings["compatibility_settings"][
                 "custom_attribs_map"]
