@@ -1,3 +1,4 @@
+import re
 import os
 import getpass
 import shotgun_api3
@@ -64,7 +65,7 @@ def get_shotgrid_session():
         )
 
     user = getpass.getuser()
-    proxy = os.environ.get("HTTPS_PROXY", "").replace("https://", "")
+    proxy = re.sub(r"https?://", "", os.environ.get("HTTPS_PROXY", ""))
 
     try:
         return create_sg_session(
