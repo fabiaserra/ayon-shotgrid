@@ -39,7 +39,7 @@ spec:
             - name: AYON_ADDON_NAME
               value: {{ .Values.addonName }}
             - name: AYON_ADDON_VERSION
-              value: {{ .Chart.AppVersion }}
+              value: {{ .Chart.Version }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.ayonShotgridTransmitter.image.repository }}:{{ .Values.ayonShotgridTransmitter.image.tag | default .Chart.AppVersion }}"
@@ -70,7 +70,7 @@ spec:
             - name: AYON_ADDON_NAME
               value: {{ .Values.addonName }}
             - name: AYON_ADDON_VERSION
-              value: {{ .Chart.AppVersion }}
+              value: {{ .Chart.Version }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.ayonShotgridProcessor.image.repository }}:{{ .Values.ayonShotgridProcessor.image.tag | default .Chart.AppVersion }}"
@@ -101,7 +101,7 @@ spec:
             - name: AYON_ADDON_NAME
               value: {{ .Values.addonName }}
             - name: AYON_ADDON_VERSION
-              value: {{ .Chart.AppVersion }}
+              value: {{ .Chart.Version }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.ayonShotgridLeecher.image.repository }}:{{ .Values.ayonShotgridLeecher.image.tag | default .Chart.AppVersion }}"

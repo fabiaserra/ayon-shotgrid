@@ -37,7 +37,7 @@ build-shotgrid-leecher:
     - /kaniko/executor
       --context "${CI_PROJECT_DIR}/services"
       --dockerfile "${CI_PROJECT_DIR}/services/leecher/Dockerfile"
-      --destination "${CI_REGISTRY_IMAGE}/ayon-shotgrid-leecher:${VERSION}"
+      --destination "${CI_REGISTRY_IMAGE}/ayon-shotgrid-leecher:${VERSION}-${CI_COMMIT_SHORT_SHA}"
   rules:
     - if: $CI_COMMIT_BRANCH == "release/alkemyx"
       changes:
@@ -59,7 +59,7 @@ build-shotgrid-processor:
     - /kaniko/executor
       --context "${CI_PROJECT_DIR}/services"
       --dockerfile "${CI_PROJECT_DIR}/services/processor/Dockerfile"
-      --destination "${CI_REGISTRY_IMAGE}/ayon-shotgrid-processor:${VERSION}"
+      --destination "${CI_REGISTRY_IMAGE}/ayon-shotgrid-processor:${VERSION}-${CI_COMMIT_SHORT_SHA}"
   rules:
     - if: $CI_COMMIT_BRANCH == "release/alkemyx"
       changes:
@@ -81,7 +81,7 @@ build-shotgrid-transmitter:
     - /kaniko/executor
       --context "${CI_PROJECT_DIR}/services"
       --dockerfile "${CI_PROJECT_DIR}/services/transmitter/Dockerfile"
-      --destination "${CI_REGISTRY_IMAGE}/ayon-shotgrid-transmitter:${VERSION}"
+      --destination "${CI_REGISTRY_IMAGE}/ayon-shotgrid-transmitter:${VERSION}-${CI_COMMIT_SHORT_SHA}"
   rules:
     - if: $CI_COMMIT_BRANCH == "release/alkemyx"
       changes:
@@ -110,8 +110,9 @@ update-helm-chart:
   script:
     # The last part of this syntax is to avoid replacing multiple 'tag' entries and just do it on the first one it finds
     # which in our values.yaml happens to be the 'ayon' artifact that we are interested in replacing
-    - 'sed -i "/tag:.*/{s//tag: ${VERSION}/}" k8s/ayon_shotgrid/values.yaml'
-    - 'sed -i "s/appVersion:.*/appVersion: ${VERSION}/" k8s/ayon_shotgrid/Chart.yaml'
+    - 'sed -i "/tag:.*/{s//tag: ${VERSION}-${CI_COMMIT_SHORT_SHA}/}" k8s/ayon_shotgrid/values.yaml'
+    - 'sed -i "s/version:.*/version: ${VERSION}/" k8s/ayon_shotgrid/Chart.yaml'
+    - 'sed -i "s/appVersion:.*/appVersion: \"${VERSION}-${CI_COMMIT_SHORT_SHA}\"/" k8s/ayon_shotgrid/Chart.yaml'
     - git add k8s/ayon_shotgrid/values.yaml
     - git add k8s/ayon_shotgrid/Chart.yaml
     - git commit -m "Update Helm chart with new tag [ci skip]"
