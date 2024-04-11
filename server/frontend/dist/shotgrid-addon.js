@@ -142,7 +142,7 @@ const getShotgridUsers = async () => {
   const sgBaseUrl = `${addonSettings.shotgrid_server.replace(/\/+$/, '')}/api/v1`
   sgAuthToken = await axios
     .post(`${sgBaseUrl}/auth/access_token`, {
-        client_id: addonSettings.shotgrid_script_name,
+        client_id: addonSettings.shotgrid_api_name,
         client_secret: addonSettings.shotgrid_api_key,
         grant_type: "client_credentials",
     }, {
@@ -260,7 +260,7 @@ const getShotgridProjects = async () => {
   const sgBaseUrl = `${addonSettings.shotgrid_server.replace(/\/+$/, '')}/api/v1`
   sgAuthToken = await axios
     .post(`${sgBaseUrl}/auth/access_token`, {
-        client_id: addonSettings.shotgrid_script_name,
+        client_id: addonSettings.shotgrid_api_name,
         client_secret: addonSettings.shotgrid_api_key,
         grant_type: "client_credentials",
     }, {
