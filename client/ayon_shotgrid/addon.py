@@ -9,7 +9,7 @@ from ayon_core.addon import (
 )
 
 
-SHOTGRID_MODULE_DIR = os.path.dirname(os.path.abspath(__file__))
+SHOTGRID_ADDON_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 class ShotgridAddon(AYONAddon, IPluginPaths):
@@ -35,7 +35,7 @@ class ShotgridAddon(AYONAddon, IPluginPaths):
     def get_plugin_paths(self):
         return {
             "publish": [
-                os.path.join(SHOTGRID_MODULE_DIR, "plugins", "publish")
+                os.path.join(SHOTGRID_ADDON_DIR, "plugins", "publish")
             ]
         }
 
