@@ -11,7 +11,7 @@ get-version:
   image:
     name: "ubuntu:jammy"
   script:
-    - VERSION=$(sed -n 's/__version__ = \"\(.*\)\"/\1/p' ./version.py)
+    - VERSION=$(sed -n 's/version = \"\(.*\)\"/\1/p' ./package.py)
     - echo "VERSION=${VERSION}" > version_info.txt
   artifacts:
     reports:
