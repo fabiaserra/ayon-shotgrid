@@ -38,6 +38,22 @@ import zipfile
 from typing import Optional
 import package
 
+try:
+    import ayon_api
+    from ayon_api import get_server_api_connection
+
+    has_ayon_api = True
+except ModuleNotFoundError:
+    has_ayon_api = False
+
+try:
+    from dotenv import load_dotenv
+
+    load_dotenv()
+except ModuleNotFoundError:
+    if has_ayon_api:
+        logging.warning("dotenv not installed, skipping loading .env file")
+
 ADDON_NAME: str = package.name
 ADDON_VERSION: str = package.version
 ADDON_CLIENT_DIR: str = package.client_dir
@@ -254,7 +270,7 @@ def main(
     output_dir: Optional[str] = None,
     skip_zip: bool = False,
     keep_sources: bool = False,
-    clear_output_dir: bool = False
+    clear_output_dir: bool = False,
 ):
     log = logging.getLogger("create_package")
     log.info("Start creating package")
@@ -334,11 +350,40 @@ if __name__ == "__main__":
             " (Will be purged if already exists!)"
         )
     )
+    parser.add_argument(
+        "--upload",
+        dest="upload",
+        action="store_true",
+        help="Upload the build to your ayon server and reload",
+    )
 
     args = parser.parse_args(sys.argv[1:])
     main(
         args.output_dir,
         args.skip_zip,
         args.keep_sources,
-        args.clear_output_dir
+        args.clear_output_dir,
     )
+    if args.upload and not args.skip_zip:
+        if not has_ayon_api:
+            raise RuntimeError(
+                "Ayon API is not available. Please install it"
+                " to use the upload feature."
+            )
+        output_dir = args.output_dir
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        if not output_dir:
+            output_dir = os.path.join(current_dir, "package")
+        output_path = os.path.join(
+            output_dir, f"{ADDON_NAME}-{ADDON_VERSION}.zip"
+        )
+
+        ayon_api.init_service()
+        log: logging.Logger = logging.getLogger("upload_package")
+        log.info("Trying to upload zip")
+        response = ayon_api.upload_addon_zip(output_path)
+        server = get_server_api_connection()
+        if server:
+            server.trigger_server_restart()
+        else:
+            log.warning("Could not restart server")
