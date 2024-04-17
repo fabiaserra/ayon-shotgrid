@@ -62,10 +62,10 @@ def _sg_to_ay_dict(
             name = slugify_string(task_type)
 
     elif sg_entity["type"] == "Project":
-        name = slugify_string(sg_entity[project_code_field])
+        name = slugify_string(sg_entity[project_code_field], min_length=0)
         label = sg_entity[project_code_field]
     else:
-        name = slugify_string(sg_entity["code"])
+        name = slugify_string(sg_entity["code"], min_length=0)
         label = sg_entity["code"]
         folder_type = sg_entity["type"]
 

@@ -71,7 +71,7 @@ def match_shotgrid_hierarchy_in_ayon(
         # If we haven't found the ay_entity by its id, check by its name
         # to avoid creating duplicates and erroring out
         if ay_entity is None:
-            name = slugify_string(sg_ay_dict["name"])
+            name = slugify_string(sg_ay_dict["name"], min_length=0)
             for child in ay_parent_entity.children:
                 if child.name.lower() == name.lower():
                     ay_entity = child
