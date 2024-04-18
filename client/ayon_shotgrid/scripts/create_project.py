@@ -1,7 +1,8 @@
-from openpype import client
-from openpype.lib import Logger
-from openpype.pipeline import project_folders
-from openpype.settings import get_project_settings
+import ayon_api
+
+from ayon_core.lib import Logger
+from ayon_core.pipeline import project_folders
+from ayon_core.settings import get_project_settings
 
 from ayon_shotgrid.lib import credentials
 
@@ -28,7 +29,7 @@ def create_project(project_code):
     project_name = sg_project["name"]
 
     # Create OP project
-    client.create_project(
+    ayon_api.create_project(
         project_name,
         project_code,
         library_project=False,
