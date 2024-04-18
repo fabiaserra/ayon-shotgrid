@@ -1,8 +1,9 @@
 import getpass
 import re
 
-from openpype.client.operations import OperationsSession
-from openpype.lib import run_subprocess
+from ayon_core.client.operations import OperationsSession
+from ayon_core.lib import run_subprocess
+from ayon_core.pipeline.context_tools import get_current_project_name
 import pyblish.api
 
 
@@ -20,10 +21,12 @@ class IntegrateShotgridShotData(pyblish.api.InstancePlugin):
 
     optional = True
     sg_tags = {
-        "retime": {"id": 245, "name": "retime", "type": "Tag"},
-        "repo": {"id": 424, "name": "Pushin/Repo", "type": "Tag"},
-        "insert": {"id": 244, "name": "Screen Insert", "type": "Tag"},
-        "split": {"id": 423, "name": "Split Screen", "type": "Tag"},
+        "screen insert": {"id": 244, "name": "screen insert", "type": "Tag"},
+        "re-time": {"id": 6553, "name": "retime", "type": "Tag"},
+        "repo": {"id": 6556, "name": "repo", "type": "Tag"},
+        "split screen": {"id": 6557, "name": "split screen", "type": "Tag"},
+        "flip/flop": {"id": 6558, "name": "flip/flop", "type": "Tag"},
+        "insert element": {"id": 6674, "name": "insert element", "type": "Tag"}
     }
     sg_batch = []
 
@@ -35,7 +38,7 @@ class IntegrateShotgridShotData(pyblish.api.InstancePlugin):
             return
 
         context = instance.context
-        sg_session = context.data.get("shotgridSession")
+        self.sg = context.data.get("shotgridSession")
         shotgrid_version = instance.data.get("shotgridVersion")
 
         if not shotgrid_version:
@@ -58,7 +61,7 @@ class IntegrateShotgridShotData(pyblish.api.InstancePlugin):
         self.update_working_resolution(instance, sg_shot)
         self.update_edit_note(instance, sg_shot)
 
-        result = sg_session.batch(self.sg_batch)
+        result = self.sg.batch(self.sg_batch)
         if not result:
             self.log.warning(
                 "Failed to update data on Shotgrid Shot '%s'", sg_shot["name"]
@@ -122,8 +125,7 @@ class IntegrateShotgridShotData(pyblish.api.InstancePlugin):
                 tag_updates.append(tag)
 
         # Compare tag_updates to current tags
-        sg_session = instance.context.data.get("shotgridSession")
-        shot_tags = sg_session.sg.find_one(
+        shot_tags = self.sg.find_one(
             "Shot", [["id", "is", sg_shot["id"]]], ["code", "tags"]
         ).get("tags")
 
@@ -189,7 +191,7 @@ class IntegrateShotgridShotData(pyblish.api.InstancePlugin):
             }
         )
 
-        project_name = instance.context.data["projectEntity"]["name"]
+        project_name = get_current_project_name()
         op_session = OperationsSession()
         op_session.update_entity(
             project_name, asset_doc["type"], asset_doc["_id"], asset_doc
@@ -215,11 +217,9 @@ class IntegrateShotgridShotData(pyblish.api.InstancePlugin):
         if not edit_note_text:
             return
 
-        sg_session = instance.context.data.get("shotgridSession")
-
         filters = [["note_links", "is", {"type": "Shot", "id": sg_shot["id"]}]]
         fields = ["id", "content", "user", "created_at"]
-        notes = sg_session.find("Note", filters, fields)
+        notes = self.sg.find("Note", filters, fields)
         # Check to see if the note was already made. If so skip
         for note in notes:
             if note["content"] == edit_note_text:
@@ -229,13 +229,12 @@ class IntegrateShotgridShotData(pyblish.api.InstancePlugin):
                 )
                 return
 
-        sg_user = sg_session.find_one(
+        sg_user = self.sg.find_one(
             "HumanUser", [["name", "contains", getpass.getuser()]], ["name"]
         )
-        sg_project_id = sg_session.find_one(
+        sg_project_id = self.sg.find_one(
             "Shot", ["id", "is", sg_shot["id"]], ["project.Project.id"]
         ).get("project.Project.id")
-        
         note_data = {
             "project": {"type": "Project", "id": sg_project_id},
             "note_links": [{"type": "Shot", "id": sg_shot["id"]}],
