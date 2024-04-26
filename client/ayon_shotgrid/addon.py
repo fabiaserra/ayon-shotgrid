@@ -1,11 +1,9 @@
 import os
-import click
-
-import ayon_api
 
 from ayon_core.addon import (
     AYONAddon,
     IPluginPaths,
+    click_wrap
 )
 
 
@@ -39,6 +37,9 @@ class ShotgridAddon(AYONAddon, IPluginPaths):
             ]
         }
 
+    def cli(self, click_group):
+        click_group.add_command(cli_main.to_click_obj())
+
     def is_local_storage_enabled(self):
         return self._enable_local_storage if self._enable_local_storage else False
 
@@ -60,30 +61,26 @@ class ShotgridAddon(AYONAddon, IPluginPaths):
         )
 
 
-@click.command("populate_tasks")
-@click.argument("project_code")
+@click_wrap.command("populate_tasks")
+@click_wrap.argument("project_code")
 def populate_tasks_command(project_code):
     """Given a SG project code, populate the default tasks to all its entities."""
     from ayon_shotgrid.scripts import populate_tasks
     return populate_tasks.populate_tasks(project_code)
 
 
-@click.command("create_project")
-@click.argument("project_code")
+@click_wrap.command("create_project")
+@click_wrap.argument("project_code")
 def create_project_command(project_code):
     """Given a SG project code, populate the default tasks to all its entities."""
     from ayon_shotgrid.scripts import create_project
     return create_project.create_project(project_code)
 
 
-@click.group(ShotgridAddon.name, help="Shotgrid CLI")
+@click_wrap.group(ShotgridAddon.name, help="Shotgrid CLI")
 def cli_main():
     pass
 
 
 cli_main.add_command(populate_tasks_command)
 cli_main.add_command(create_project_command)
-
-
-if __name__ == "__main__":
-    cli_main()
