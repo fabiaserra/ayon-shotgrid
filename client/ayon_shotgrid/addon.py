@@ -37,6 +37,11 @@ class ShotgridAddon(AYONAddon, IPluginPaths):
             ]
         }
 
+    def get_launch_hook_paths(self, app):
+        return [
+            os.path.join(SHOTGRID_ADDON_DIR, "hooks")
+        ]
+    
     def cli(self, click_group):
         click_group.add_command(cli_main.to_click_obj())
 
