@@ -224,7 +224,8 @@ class ShotgridSettings(BaseSettingsModel):
             "can specify here which field in the ShotGrid Project "
             "entity represents it."
         ),
-        example="sg_code"
+        example="sg_code",
+        scope=["studio"],
     )
     enable_shotgrid_local_storage: bool = SettingsField(
         default=True,
