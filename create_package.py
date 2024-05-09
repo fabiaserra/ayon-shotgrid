@@ -37,6 +37,22 @@ import zipfile
 
 from typing import Optional
 
+try:
+    import ayon_api
+    from ayon_api import get_server_api_connection
+
+    has_ayon_api = True
+except ModuleNotFoundError:
+    has_ayon_api = False
+
+try:
+    from dotenv import load_dotenv
+
+    load_dotenv()
+except ModuleNotFoundError:
+    if has_ayon_api:
+        logging.warning("dotenv not installed, skipping loading .env file")
+
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 PACKAGE_PATH = os.path.join(CURRENT_DIR, "package.py")
 package_content = {}
