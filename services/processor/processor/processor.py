@@ -5,14 +5,14 @@ This service will continually run and query the Ayon Events Server in orther to
 entroll the events of topic `shotgrid.leech` to perform processing of Shotgrid
 related events.
 """
-import importlib
 import os
 import time
 import types
 import socket
+import importlib.machinery
+from nxtools import logging, log_traceback
 
 import ayon_api
-from nxtools import logging, log_traceback
 
 
 class ShotgridProcessor:
@@ -40,16 +40,32 @@ class ShotgridProcessor:
         try:
             ayon_api.init_service()
             self.settings = ayon_api.get_service_addon_settings()
+            service_settings = self.settings["service_settings"]
 
             self.sg_url = self.settings["shotgrid_server"]
-            self.sg_project_code_field = self.settings["shotgrid_project_code_field"]
+            self.sg_project_code_field = self.settings[
+                "shotgrid_project_code_field"]
 
-            self.sg_script_name = self.settings["shotgrid_api_name"]
-            self.sg_api_key = self.settings["shotgrid_api_key"]
+            # get server op related ShotGrid script api properties
+            shotgrid_secret = ayon_api.get_secret(
+                service_settings["script_key"])
+            self.sg_api_key = shotgrid_secret.get("value")
+            if not self.sg_api_key:
+                raise ValueError(
+                    "Shotgrid API Key not found. Make sure to set it in the "
+                    "Addon System settings."
+                )
+
+            self.sg_script_name = service_settings["script_name"]
+            if not self.sg_script_name:
+                raise ValueError(
+                    "Shotgrid Script Name not found. Make sure to set it in "
+                    "the Addon System settings."
+                )
 
             try:
                 self.sg_polling_frequency = int(
-                    self.settings["service_settings"]["polling_frequency"]
+                    service_settings["polling_frequency"]
                 )
             except Exception:
                 self.sg_polling_frequency = 10
@@ -80,8 +96,6 @@ class ShotgridProcessor:
         self.handlers_map = self._get_handlers()
         if not self.handlers_map:
             logging.error("No handlers found for the processor, aborting.")
-        else:
-            logging.debug(f"Found these handlers: {self.handlers_map}")
 
     def _get_handlers(self):
         """ Import the handlers found in the `handlers` directory.
@@ -129,10 +143,6 @@ class ShotgridProcessor:
         will trigger the `handlers/project_sync.py` since that one has the attribute
         REGISTER_EVENT_TYPE = ["create-project"]
         """
-        logging.debug(
-            "Querying for `shotgrid.event` events "
-            f"every {self.sg_polling_frequency} seconds..."
-        )
         while True:
             try:
                 event = ayon_api.enroll_event_job(

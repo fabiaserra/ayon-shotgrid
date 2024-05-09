@@ -10,6 +10,7 @@ import time
 import signal
 import socket
 from typing import Any, Callable, Union
+from nxtools import logging, log_traceback
 
 from constants import (
     SG_EVENT_TYPES,
@@ -17,7 +18,6 @@ from constants import (
 )
 
 import ayon_api
-from nxtools import logging, log_traceback
 import shotgun_api3
 
 
@@ -38,32 +38,49 @@ class ShotgridListener:
         else:
             self.func = func
 
-        logging.debug(f"Callback method is {self.func}.")
-
         try:
             ayon_api.init_service()
             self.settings = ayon_api.get_service_addon_settings()
-            self.sg_url = self.settings["shotgrid_server"]
-            self.sg_project_code_field = self.settings["shotgrid_project_code_field"]
+            service_settings = self.settings["service_settings"]
 
-            self.sg_script_name = self.settings["shotgrid_api_name"]
-            self.sg_api_key = self.settings["shotgrid_api_key"]
+            self.sg_url = self.settings["shotgrid_server"]
+            self.sg_project_code_field = self.settings[
+                "shotgrid_project_code_field"]
+
+            # get server op related ShotGrid script api properties
+            shotgrid_secret = ayon_api.get_secret(
+                service_settings["script_key"])
+            self.sg_api_key = shotgrid_secret.get("value")
+            if not self.sg_api_key:
+                raise ValueError(
+                    "Shotgrid API Key not found. Make sure to set it in the "
+                    "Addon System settings."
+                )
+
+            self.sg_script_name = service_settings["script_name"]
+            if not self.sg_script_name:
+                raise ValueError(
+                    "Shotgrid Script Name not found. Make sure to set it in "
+                    "the Addon System settings."
+                )
 
             self.custom_attribs_map = {
                 attr["ayon"]: attr["sg"]
-                for attr in self.settings["compatibility_settings"]["custom_attribs_map"]
+                for attr in self.settings["compatibility_settings"]["custom_attribs_map"]  # noqa: E501
                 if attr["sg"]
             }
+
+            # TODO: implement a way to handle status_list and tags
             self.custom_attribs_map.update({
-                "status": "status_list",
+                # "status": "status_list",
                 "tags": "tags"
             })
 
-            self.sg_enabled_entities = self.settings["compatibility_settings"]["shotgrid_enabled_entities"]
+            self.sg_enabled_entities = self.settings["compatibility_settings"]["shotgrid_enabled_entities"]  # noqa: E501
 
             try:
                 self.shotgrid_polling_frequency = int(
-                    self.settings["service_settings"]["polling_frequency"]
+                    service_settings["polling_frequency"]
                 )
             except Exception:
                 self.shotgrid_polling_frequency = 10
@@ -75,7 +92,9 @@ class ShotgridListener:
 
         try:
             self.sg_session = shotgun_api3.Shotgun(
-                self.sg_url, script_name=self.sg_script_name, api_key=self.sg_api_key
+                self.sg_url,
+                script_name=self.sg_script_name,
+                api_key=self.sg_api_key
             )
             self.sg_session.connect()
         except Exception as e:
@@ -152,8 +171,6 @@ class ShotgridListener:
             )
             last_event_id = last_event["id"]
 
-        logging.debug(f"Last non-processed SG Event is {last_event}")
-
         return last_event_id
 
     def start_listening(self):
@@ -202,7 +219,6 @@ class ShotgridListener:
                         event["event_type"].endswith("_Change")
                         and event["attribute_name"].replace("sg_", "") not in list(self.custom_attribs_map.values())
                     ):
-                        logging.debug(f"Skipping event for attribute change '{event['attribute_name'].replace('sg_', '')}', as we can't handle it.")
                         last_event_id = event.get("id", None)
                         continue
 

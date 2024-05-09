@@ -1,6 +1,6 @@
 from ayon_server.entities.core.attrib import attribute_library
 from ayon_server.settings import BaseSettingsModel, SettingsField
-from ayon_server.settings.enum import anatomy_presets_enum
+from ayon_server.settings.enum import secrets_enum, anatomy_presets_enum
 
 
 def default_shotgrid_entities():
@@ -60,18 +60,41 @@ def get_default_folder_attributes():
 
 
 class ShotgridServiceSettings(BaseSettingsModel):
-    """Specific settings for services
+    """Specific settings for the ShotGrid Services: Processor, Leecher and
+    Transmitter.
 
-    ShotGrid Services: Processor, Leecher and Transmitter.
-
-   The different services process events from either ShotGrid or AYON,
-   this field allows to control how long to wait between each event
-   is processed.
+    The different services process events from either ShotGrid or AYON,
+    this field allows to control how long to wait between each event
+    is processed.
     """
     polling_frequency: int = SettingsField(
         default=10,
         title="How often (in seconds) to process ShotGrid related events.",
         validate_default=False,
+    )
+
+    script_key: str = SettingsField(
+        default="",
+        enum_resolver=secrets_enum,
+        title="ShotGrid's Script api key",
+        description=(
+            "AYON Secret used for Service related server operations "
+            "Secret should lead to ShotGrid's Script api key. "
+            "See more at: https://developer.shotgridsoftware.com/python-api/"
+            "authentication.html#setting-up-shotgrid"
+        ),
+    )
+
+    script_name: str = SettingsField(
+        default="",
+        placeholder="Create and Paste a script name here",
+        title="ShotGrid's Script Name",
+        description=(
+            "AYON Secret used for Service related server operations "
+            "Secret should lead to ShotGrid's Script Name. "
+            "See more at: https://developer.shotgridsoftware.com/python-api/"
+            "authentication.html#setting-up-shotgrid"
+        ),
     )
 
 
@@ -88,6 +111,7 @@ class AttributesMappingModel(BaseSettingsModel):
         default_factory=list,
         enum_resolver=default_shotgrid_entities
     )
+
 
 class ShotgridCompatibilitySettings(BaseSettingsModel):
     """ Settings to define relationships between ShotGrid and AYON.
@@ -113,6 +137,64 @@ class ShotgridCompatibilitySettings(BaseSettingsModel):
     )
 
 
+class ClientLoginDetailsModel(BaseSettingsModel):
+    _layout = "expanded"
+
+    client_sg_script_key: str = SettingsField(
+        default="",
+        placeholder="Create and Paste a script api key here",
+        title="Client related ShotGrid's Script api key",
+        description=(
+            "AYON Secret used for Client related user operations "
+            "Secret should lead to ShotGrid's Script api key. "
+            "See more at: https://developer.shotgridsoftware.com/python-api/"
+            "authentication.html#setting-up-shotgrid"
+        ),
+    )
+    client_sg_script_name: str = SettingsField(
+        default="",
+        placeholder="Create and Paste a script name here",
+        title="Client related ShotGrid's Script Name",
+        description=(
+            "AYON Secret used for Client related user operations "
+            "Secret should lead to ShotGrid's Script Name. "
+            "See more at: https://developer.shotgridsoftware.com/python-api/"
+            "authentication.html#setting-up-shotgrid"
+        ),
+    )
+
+
+client_login_types_enum = [
+    {"value": "env", "label": "Via Environment Variables"},
+    {"value": "tray_pass", "label": "Via Tray App with password"},
+    {"value": "tray_api_key", "label": "Via Tray App with shared api key"},
+]
+
+
+class ClientLoginModel(BaseSettingsModel):
+    _layout = "expanded"
+
+    type: str = SettingsField(
+        "env",
+        title="Client login type",
+        description="Switch between client login types",
+        enum_resolver=lambda: client_login_types_enum,
+        conditionalEnum=True
+    )
+
+    tray_api_key: ClientLoginDetailsModel = SettingsField(
+        default_factory=ClientLoginDetailsModel,
+        title="Tray App",
+        scope=["studio"],
+    )
+
+    env: ClientLoginDetailsModel = SettingsField(
+        default_factory=ClientLoginDetailsModel,
+        title="Environment Variables",
+        scope=["studio"],
+    )
+
+
 class ShotgridSettings(BaseSettingsModel):
     """ShotGrid integration settings.
 
@@ -124,27 +206,14 @@ class ShotgridSettings(BaseSettingsModel):
         default="",
         title="ShotGrid URL",
         description="The URL to the ShotGrid Server we want to interact with.",
-        example="https://my-site.shotgrid.autodesk.com"
+        example="https://my-site.shotgrid.autodesk.com",
+        scope=["studio"]
     )
-    shotgrid_api_name: str = SettingsField(
-        default="",
-        title="ShotGrid API Script Name",
-        description=(
-            "The script_name that contains the API key to access ShotGrid."
-            "See more at: "
-            "https://developer.shotgridsoftware.com/python-api/authentication"
-            ".html#setting-up-shotgrid"
-        )
-    )
-    shotgrid_api_key: str = SettingsField(
-        default="",
-        title="ShotGrid API Key",
-        description=(
-            "The API key corresponding to the Script Name to access ShotGrid."
-            "See more at: "
-            "https://developer.shotgridsoftware.com/python-api/authentication"
-            ".html#setting-up-shotgrid"
-        )
+    client_login: ClientLoginModel = SettingsField(
+        default_factory=ClientLoginModel,
+        title="Client login settings",
+        scope=["studio"],
+        section="---",
     )
     shotgrid_project_code_field: str = SettingsField(
         default="code",
@@ -163,16 +232,18 @@ class ShotgridSettings(BaseSettingsModel):
         description=(
             "Whether to try make use of local storage defined in ShotGrid "
             "('Site Preferences -> File Management -> Local Storage') or not."
-        )
+        ),
+        scope=["studio"],
     )
     shotgrid_local_storage_key: str = SettingsField(
         default="primary",
         title="ShotGrid Local Storage entry name",
         description=(
-            "Name of the 'code' to select which one of the multiple possible "
-            "local storages entries to use."
+            "Name of the 'code' to select which one of the multiple "
+            "possible local storages entries to use."
         ),
-        example="ayon_storage"
+        example="ayon_storage",
+        scope=["studio"],
     )
     anatomy_preset: str = SettingsField(
         default="_",
@@ -183,7 +254,6 @@ class ShotgridSettings(BaseSettingsModel):
         ),
         enum_resolver=anatomy_presets_enum
     )
-
     compatibility_settings: ShotgridCompatibilitySettings = SettingsField(
         default_factory=ShotgridCompatibilitySettings,
         title="ShotGrid <-> AYON compatibility Settings",
@@ -192,8 +262,8 @@ class ShotgridSettings(BaseSettingsModel):
             "between ShotGrid and AYON entities."
         )
     )
-
     service_settings: ShotgridServiceSettings = SettingsField(
         default_factory=ShotgridServiceSettings,
         title="Service settings",
+        scope=["studio"],
     )
