@@ -1,10 +1,11 @@
 import getpass
 import re
 
-from ayon_core.client.operations import OperationsSession
+import pyblish.api
+from ayon_api.operations import OperationsSession
+
 from ayon_core.lib import run_subprocess
 from ayon_core.pipeline.context_tools import get_current_project_name
-import pyblish.api
 
 
 class IntegrateShotgridShotData(pyblish.api.InstancePlugin):

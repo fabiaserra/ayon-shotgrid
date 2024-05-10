@@ -171,9 +171,8 @@ def get_shotgrid_session():
     """
     sg_settings = ayon_api.get_addon_settings("shotgrid", __version__)
     sg_url = sg_settings["shotgrid_server"]
-    
-    sg_script_name = sg_settings["shotgrid_api_name"]
-    sg_api_key = sg_settings["shotgrid_api_key"]
+    sg_script_name = sg_settings["client_login"]["env"]["client_sg_script_name"]
+    sg_api_key = sg_settings["client_login"]["env"]["client_sg_script_key"]
 
     if not sg_script_name and not sg_api_key:
         logger.error(
