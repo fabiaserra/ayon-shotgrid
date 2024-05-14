@@ -2,7 +2,6 @@ import ayon_api
 
 from ayon_core.lib import Logger
 from ayon_core.pipeline import project_folders
-from ayon_core.settings import get_project_settings
 
 from ayon_shotgrid.lib import credentials
 
@@ -29,15 +28,24 @@ def create_project(project_code):
     project_name = sg_project["name"]
 
     # Create OP project
-    ayon_api.create_project(
-        project_name,
-        project_code,
-        library_project=False,
-    )
+    try:
+        ayon_api.create_project(
+            project_name,
+            project_code,
+            library_project=False,
+        )
+    except ValueError:
+        logger.warning("Project with code '%s' already existed", project_code)
 
-    # Set SG project id on project settings
-    project_settings = get_project_settings(project_name)
-    project_settings["shotgrid"]["shotgrid_project_id"] = sg_project["id"]
+    # Update project anatomy with SG id and enable push sync
+    ayon_api.update_project(
+        project_name=project_name,
+        attrib={
+            "shotgridId": sg_project["id"],
+            "shotgridType": "Project",
+            "shotgridPush": True,
+        }
+    )
 
     # Create project folders
     project_folders.create_project_folders(project_name)
