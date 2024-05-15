@@ -163,7 +163,7 @@ const getShotgridUsers = async () => {
     });
 
     sgUsers = await axios
-      .get(`${sgBaseUrl}/entity/human_users?fields=*`, {
+      .get(`${sgBaseUrl}/entity/human_users?filter[sg_status_list]=act&fields=login,name,email`, {
         headers: {
             'Authorization': `Bearer ${sgAuthToken}`,
             'Accept': 'application/json'
@@ -175,13 +175,12 @@ const getShotgridUsers = async () => {
         console.log(error)
       });
 
+    /* Do some extra clean up on the users returned. */
     var sgUsersConformed = []
-    
     users_to_ignore = ["dummy", "root", "support"]
     if (sgUsers) {
       sgUsers.forEach((sg_user) => {
         if (
-          sg_user.attributes.sg_status_list == "act" &&
           !users_to_ignore.some(item => sg_user.attributes.email.includes(item))
         ) {
           sgUsersConformed.push({
