@@ -43,9 +43,6 @@ class IntegrateShotgridVersion(pyblish.api.InstancePlugin):
         for representation in instance.data.get("representations", []):
             self.log.debug(pformat(representation))
 
-            if "shotgridreview" not in representation.get("tags", []):
-                continue
-
             local_path = get_publish_repre_path(
                 instance, representation, False
             )

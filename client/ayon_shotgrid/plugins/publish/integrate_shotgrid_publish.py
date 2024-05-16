@@ -32,13 +32,6 @@ class IntegrateShotgridPublish(pyblish.api.InstancePlugin):
 
         for representation in instance.data.get("representations", []):
 
-            if "shotgridreview" not in representation.get("tags", []):
-                self.log.debug(
-                    "No 'shotgridreview' tag on representation "
-                    f"'{representation.get('name')}', skipping."
-                )
-                continue
-
             local_path = get_publish_repre_path(
                 instance, representation, False
             )
