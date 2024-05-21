@@ -3,11 +3,23 @@ import re
 
 import pyblish.api
 
+from ayon_core.lib import path_tools
 from ayon_core.pipeline.publish import get_publish_repre_path
 from ayon_core.lib.transcoding import (
     VIDEO_EXTENSIONS,
     IMAGE_EXTENSIONS
 )
+VIDEO_EXTENSIONS = set(ext.lstrip(".") for ext in VIDEO_EXTENSIONS)
+IMAGE_EXTENSIONS = set(ext.lstrip(".") for ext in IMAGE_EXTENSIONS)
+GEO_EXTENSIONS = {
+    "bgeo.sc",
+    "bgeo.gz",
+    "bgeo",
+    "usd",
+    "abc",
+    "fbx",
+    "obj",
+}
 
 
 class IntegrateShotgridVersion(pyblish.api.InstancePlugin):
@@ -43,11 +55,22 @@ class IntegrateShotgridVersion(pyblish.api.InstancePlugin):
         for representation in instance.data.get("representations", []):
             self.log.debug(pformat(representation))
 
+            # Skip thumbnail representation
+            if representation["name"] == "thumbnail":
+                continue
+
             local_path = get_publish_repre_path(
                 instance, representation, False
             )
 
-            if f".{representation['ext']}" in VIDEO_EXTENSIONS:
+            # Skip temp locations
+            if local_path.startswith("/tmp"):
+                continue
+
+            # Replace the frame number with '%04d'
+            local_path = path_tools.replace_frame_number_with_token(local_path, "%04d")
+
+            if representation["ext"] in VIDEO_EXTENSIONS:
                 data_to_update["sg_path_to_movie"] = local_path
                 if (
                     "slate" in instance.data["families"]
@@ -55,13 +78,23 @@ class IntegrateShotgridVersion(pyblish.api.InstancePlugin):
                 ):
                     data_to_update["sg_movie_has_slate"] = True
 
-            elif f".{representation['ext']}" in IMAGE_EXTENSIONS:
-                # Replace the frame number with '%04d'
-                path_to_frame = re.sub(r"\.\d+\.", ".%04d.", local_path)
-
-                data_to_update["sg_path_to_frames"] = path_to_frame
+            elif representation["ext"] in IMAGE_EXTENSIONS:
+                data_to_update["sg_path_to_frames"] = local_path
                 if "slate" in instance.data["families"]:
                     data_to_update["sg_frames_have_slate"] = True
+
+            elif representation["ext"] in GEO_EXTENSIONS:
+                data_to_update["sg_path_to_geometry"] = local_path
+
+            #TODO: add some logic to figure out what the main representation
+            # if there's more than one
+            else:
+                data_to_update["sg_path_to_main_representation"] = local_path
+
+        # Fill up source path field
+        source_path = instance.data.get("source")
+        if source_path:
+            data_to_update["sg_path_to_source"] = source_path
 
         # If there's no data to set/update, skip creation of SG version
         if not data_to_update:
