@@ -73,7 +73,7 @@ class ShotgridStatusHook(PreLaunchHook):
             ["code", "sg_status_list", "id"]
         )
 
-        if sg_task.get("sg_status_list") in ["wtg", "rdy"]:
+        if sg_task and sg_task.get("sg_status_list") in ["wtg", "rdy"]:
             self.log.info("Updating task status to 'In Progress'")
             try:
                 sg.update("Task", sg_task["id"], {"sg_status_list": "ip"})
