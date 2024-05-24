@@ -8,6 +8,15 @@ from ayon_core.lib.transcoding import (
     VIDEO_EXTENSIONS,
     IMAGE_EXTENSIONS
 )
+GEO_EXTENSIONS = {
+    "bgeo.sc",
+    "bgeo.gz",
+    "bgeo",
+    "usd",
+    "abc",
+    "fbx",
+    "obj",
+}
 
 
 class IntegrateShotgridVersion(pyblish.api.InstancePlugin):
@@ -49,10 +58,7 @@ class IntegrateShotgridVersion(pyblish.api.InstancePlugin):
 
             if f".{representation['ext']}" in VIDEO_EXTENSIONS:
                 data_to_update["sg_path_to_movie"] = local_path
-                if (
-                    "slate" in instance.data["families"]
-                    and "slate-frame" in representation["tags"]
-                ):
+                if instance.data.get("slate_frame"):
                     data_to_update["sg_movie_has_slate"] = True
 
             elif f".{representation['ext']}" in IMAGE_EXTENSIONS:
@@ -60,8 +66,26 @@ class IntegrateShotgridVersion(pyblish.api.InstancePlugin):
                 path_to_frame = re.sub(r"\.\d+\.", ".%04d.", local_path)
 
                 data_to_update["sg_path_to_frames"] = path_to_frame
-                if "slate" in instance.data["families"]:
+                if instance.data.get("slate_frame"):
                     data_to_update["sg_frames_have_slate"] = True
+
+            elif representation["ext"] in GEO_EXTENSIONS:
+                data_to_update["sg_path_to_geometry"] = local_path
+
+            #TODO: add some logic to figure out what the main representation
+            # if there's more than one
+            else:
+                data_to_update["sg_path_to_main_representation"] = local_path
+                data_to_update["sg_status_list"] = "na"
+
+        sg_status = instance.data.get("sg_status")
+        if sg_status:
+            data_to_update["sg_status_list"] = sg_status
+
+        # Fill up source path field
+        source_path = instance.data.get("source")
+        if source_path:
+            data_to_update["sg_path_to_source"] = source_path
 
         # If there's no data to set/update, skip creation of SG version
         if not data_to_update:
