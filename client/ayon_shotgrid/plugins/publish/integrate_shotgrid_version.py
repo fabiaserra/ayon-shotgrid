@@ -58,7 +58,7 @@ class IntegrateShotgridVersion(pyblish.api.InstancePlugin):
 
             if f".{representation['ext']}" in VIDEO_EXTENSIONS:
                 data_to_update["sg_path_to_movie"] = local_path
-                if instance.data.get("slate_frame"):
+                if instance.data.get("slateFrame"):
                     data_to_update["sg_movie_has_slate"] = True
 
             elif f".{representation['ext']}" in IMAGE_EXTENSIONS:
@@ -66,7 +66,7 @@ class IntegrateShotgridVersion(pyblish.api.InstancePlugin):
                 path_to_frame = re.sub(r"\.\d+\.", ".%04d.", local_path)
 
                 data_to_update["sg_path_to_frames"] = path_to_frame
-                if instance.data.get("slate_frame"):
+                if instance.data.get("slateFrame"):
                     data_to_update["sg_frames_have_slate"] = True
 
             elif representation["ext"] in GEO_EXTENSIONS:
