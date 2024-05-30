@@ -159,6 +159,7 @@ def clear_local_login():
     if reg.get_item("value", None) is not None:
         reg.delete_item("value")
 
+
 ### Starts Alkemy-X Override ###
 def get_shotgrid_session():
     """Return a Shotgun API session object for the configured ShotGrid server.

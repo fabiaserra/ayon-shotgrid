@@ -34,8 +34,10 @@ def create_project(project_code):
             project_code,
             library_project=False,
         )
-    except ValueError:
-        logger.warning("Project with code '%s' already existed", project_code)
+    except ValueError as e:
+        logger.warning(
+            "Project with code '%s' couldn't be created due to:\n%s", project_code, e
+        )
 
     # Update project anatomy with SG id and enable push sync
     ayon_api.update_project(
