@@ -70,9 +70,8 @@ class ShotgridListener:
                 if attr["sg"]
             }
 
-            # TODO: implement a way to handle status_list and tags
             self.custom_attribs_map.update({
-                # "status": "status_list",
+                "status": "status_list",
                 "tags": "tags"
             })
 

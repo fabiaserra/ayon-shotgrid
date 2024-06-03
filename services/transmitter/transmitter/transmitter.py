@@ -62,6 +62,11 @@ class ShotgridTransmitter:
                 for attr in custom_attribs_map
                 if attr["sg"]
             }
+            self.custom_attribs_map.update({
+                "status": "status_list",
+                "tags": "tags"
+            })
+
             self.custom_attribs_types = {
                 attr["sg"]: (attr["type"], attr["scope"])
                 for attr in custom_attribs_map
