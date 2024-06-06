@@ -37,6 +37,7 @@ build-shotgrid-leecher:
     - /kaniko/executor
       --context "${CI_PROJECT_DIR}/services"
       --dockerfile "${CI_PROJECT_DIR}/services/leecher/Dockerfile"
+      --build-arg CW_GROUP_CI_TOKEN=${CW_GROUP_CI_TOKEN}
       --destination "${CI_REGISTRY_IMAGE}/ayon-shotgrid-leecher:${VERSION}-${CI_COMMIT_SHORT_SHA}"
   rules:
     - if: $CI_COMMIT_BRANCH == "release/alkemyx"
@@ -59,6 +60,7 @@ build-shotgrid-processor:
     - /kaniko/executor
       --context "${CI_PROJECT_DIR}/services"
       --dockerfile "${CI_PROJECT_DIR}/services/processor/Dockerfile"
+      --build-arg CW_GROUP_CI_TOKEN=${CW_GROUP_CI_TOKEN}
       --destination "${CI_REGISTRY_IMAGE}/ayon-shotgrid-processor:${VERSION}-${CI_COMMIT_SHORT_SHA}"
   rules:
     - if: $CI_COMMIT_BRANCH == "release/alkemyx"
@@ -81,6 +83,7 @@ build-shotgrid-transmitter:
     - /kaniko/executor
       --context "${CI_PROJECT_DIR}/services"
       --dockerfile "${CI_PROJECT_DIR}/services/transmitter/Dockerfile"
+      --build-arg CW_GROUP_CI_TOKEN=${CW_GROUP_CI_TOKEN}
       --destination "${CI_REGISTRY_IMAGE}/ayon-shotgrid-transmitter:${VERSION}-${CI_COMMIT_SHORT_SHA}"
   rules:
     - if: $CI_COMMIT_BRANCH == "release/alkemyx"
