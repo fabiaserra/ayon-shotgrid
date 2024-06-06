@@ -64,7 +64,8 @@ class ShotgridTransmitter:
             }
             self.custom_attribs_map.update({
                 "status": "status_list",
-                "tags": "tags"
+                "tags": "tags",
+                "assignees": "task_assignees"
             })
 
             self.custom_attribs_types = {
@@ -107,6 +108,7 @@ class ShotgridTransmitter:
             "entity.folder.attrib_changed",
             "entity.folder.status_changed",
             "entity.folder.tags_changed",
+            "entity.version.status_changed",
         ]
 
         while True:

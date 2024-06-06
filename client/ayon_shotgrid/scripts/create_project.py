@@ -51,3 +51,12 @@ def create_project(project_code):
 
     # Create project folders
     project_folders.create_project_folders(project_name)
+
+    # Update SG project AYON auto-sync to True so it keeps it up to date
+    sg.update(
+        "Project",
+        sg_project["id"],
+        {
+            "sg_ayon_auto_sync": True
+        }
+    )

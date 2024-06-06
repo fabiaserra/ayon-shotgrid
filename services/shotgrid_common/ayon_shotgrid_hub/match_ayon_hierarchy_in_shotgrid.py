@@ -125,7 +125,9 @@ def match_ayon_hierarchy_in_shotgrid(
                             data_to_update
                         )
 
-            if sg_ay_dict is None:
+            # We only create new entities for Folders/Tasks entities
+            # For Version entities we only try update the status if it already exists
+            if sg_ay_dict is None and sg_entity_type != "Version":
                 sg_parent_entity = sg_session.find_one(
                     sg_ay_parent_entity["attribs"][SHOTGRID_TYPE_ATTRIB],
                     filters=[[
@@ -146,6 +148,10 @@ def match_ayon_hierarchy_in_shotgrid(
                 sg_entity_id = sg_ay_dict["attribs"][SHOTGRID_ID_ATTRIB]
                 sg_ay_dicts[sg_entity_id] = sg_ay_dict
                 sg_ay_dicts_parents[sg_parent_entity["id"]].append(sg_ay_dict)
+
+            if not sg_ay_dict:
+                logging.error(f"AYON entity {ay_entity} not found in SG, ignoring it")
+                continue
 
             ay_entity.attribs.set(
                 SHOTGRID_ID_ATTRIB,

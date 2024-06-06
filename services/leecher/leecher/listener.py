@@ -72,7 +72,8 @@ class ShotgridListener:
 
             self.custom_attribs_map.update({
                 "status": "status_list",
-                "tags": "tags"
+                "tags": "tags",
+                "assignees": "task_assignees"
             })
 
             self.sg_enabled_entities = self.settings["compatibility_settings"]["shotgrid_enabled_entities"]  # noqa: E501
@@ -218,6 +219,7 @@ class ShotgridListener:
                         event["event_type"].endswith("_Change")
                         and event["attribute_name"].replace("sg_", "") not in list(self.custom_attribs_map.values())
                     ):
+                        logging.debug("Ignoring event '%s' as it's not supported", event)
                         last_event_id = event.get("id", None)
                         continue
 

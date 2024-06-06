@@ -1,5 +1,8 @@
 # In order for this Dockerfile to work it needs to be built from the `services` directory
 FROM python:3.11-alpine3.18
+
+ARG CW_GROUP_CI_TOKEN
+
 ENV PYTHONUNBUFFERED=1
 
 # Install python/pip
@@ -14,7 +17,10 @@ WORKDIR /service
 
 # Install dependencies with poetry
 RUN poetry config virtualenvs.create false
-RUN poetry install --no-interaction --no-ansi --only main
+# Pass gitlab token so we can reference our local ayon-python-api repo
+# as a dependency package
+RUN git config --global url."https://dl:${CW_GROUP_CI_TOKEN}@gitlab.alkemy-x.com/".insteadOf "https://gitlab.alkemy-x.com/" \
+  && poetry install --no-interaction --no-ansi --only main
 
 # Remove unnecessary packages to make the image smaller
 RUN apk del git curl build-base libffi-dev

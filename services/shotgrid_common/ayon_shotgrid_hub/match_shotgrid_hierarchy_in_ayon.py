@@ -79,6 +79,7 @@ def match_shotgrid_hierarchy_in_ayon(
         processed_ids.add(sg_entity_id)
 
         logging.info(f"Deck size: {len(sg_ay_dicts_deck)}")
+        logging.debug("Processing %s", sg_ay_dict)
 
         ay_entity = None
         sg_entity_sync_status = "Synced"
@@ -106,7 +107,9 @@ def match_shotgrid_hierarchy_in_ayon(
                     sg_ay_dict
                 )
 
-            if not ay_entity:
+            # We only create new entities for Folders/Tasks entities
+            # For Version entities we only try update the status if it already exists
+            if not ay_entity and sg_ay_dict["type"] != "version":
                 ay_entity = _create_new_entity(
                     entity_hub,
                     ay_parent_entity,
@@ -128,7 +131,7 @@ def match_shotgrid_hierarchy_in_ayon(
                 sg_project_sync_status = "Failed"
             else:
                 update_ay_entity_custom_attributes(
-                    ay_entity, sg_ay_dict, custom_attribs_map
+                    ay_entity, sg_ay_dict, custom_attribs_map, ay_project=entity_hub.project_entity
                 )
 
         # skip if no ay_entity is found
@@ -152,8 +155,9 @@ def match_shotgrid_hierarchy_in_ayon(
                 or sg_ay_dict["data"][CUST_FIELD_CODE_SYNC] != sg_entity_sync_status  # noqa
             )
         ):
-            # logging.debug(
-            #     "Updating AYON entity ID and sync status in SG and AYON")
+            logging.debug(
+                "Updating AYON entity ID and sync status in SG and AYON.",
+            )
             update_data = {
                 CUST_FIELD_CODE_ID: ay_entity.id,
                 CUST_FIELD_CODE_SYNC: sg_entity_sync_status
@@ -229,6 +233,8 @@ def _create_new_entity(entity_hub, parent_entity, sg_ay_dict):
         parent_entity: Ayon parent entity.
         sg_ay_dict (dict): Ayon ShotGrid entity to create.
     """
+    logging.debug("Creating new entity with data: %s", sg_ay_dict)
+    
     if sg_ay_dict["type"].lower() == "task":
         # only create if parent_entity type is not project
         if parent_entity.entity_type == "project":
@@ -247,7 +253,7 @@ def _create_new_entity(entity_hub, parent_entity, sg_ay_dict):
             attribs=sg_ay_dict["attribs"],
             data=sg_ay_dict["data"],
         )
-    else:
+    elif sg_ay_dict["type"].lower() == "folder":
         ay_entity = entity_hub.add_new_folder(
             sg_ay_dict["folder_type"],
             name=sg_ay_dict["name"],
@@ -258,19 +264,37 @@ def _create_new_entity(entity_hub, parent_entity, sg_ay_dict):
             data=sg_ay_dict["data"],
         )
 
-    # TODO: this doesn't work yet
-    status = sg_ay_dict["attribs"].get("status")
+    status = sg_ay_dict.get("status")
     if status:
-        # TODO: Implement status update
+        # Entity hub expects the statuses to be provided with the `name` and
+        # not the `short_name` (which is what we get from SG) so we convert
+        # the short name back to the long name before setting it
+        status_mapping = {
+            status.short_name: status.name for status in entity_hub.project_entity.statuses
+        }
+        new_status_name = status_mapping.get(status)
+        if not new_status_name:
+            logging.warning(
+                "Status with short name '%s' doesn't exist in project", status
+            )
+        else:
+            try:
+                # INFO: it was causing error so trying to set status directly
+                ay_entity.status = new_status_name
+            except ValueError as e:
+                # `ValueError: Status ip is not available on project.`
+                # NOTE: this doesn't really raise exception?
+                logging.warning(f"Status sync not implemented: {e}")
+
+    assignees = sg_ay_dict.get("assignees")
+    if assignees:
         try:
             # INFO: it was causing error so trying to set status directly
-            ay_entity.status = status
+            ay_entity.assignees = assignees
         except ValueError as e:
-            # `ValueError: Status ip is not available on project.`
-            # logging.warning(f"Status sync not implemented: {e}")
-            pass
+            logging.warning(f"Assignees sync not implemented: {e}")
 
-    tags = sg_ay_dict["attribs"].get("tags")
+    tags = sg_ay_dict.get("tags")
     if tags:
         ay_entity.tags = [tag["name"] for tag in tags]
 

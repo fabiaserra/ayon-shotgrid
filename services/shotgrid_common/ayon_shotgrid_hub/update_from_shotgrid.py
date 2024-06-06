@@ -102,14 +102,15 @@ def create_ay_entity_from_sg_event(
         if ay_entity:
             # Ensure Ayon Entity has the correct ShotGrid ID
             ayon_entity_sg_id = str(
-                ay_entity.attribs.get_attribute(SHOTGRID_ID_ATTRIB).value)
-            # Ensure Ayon Entity has the correct Shotgrid ID
-            ay_shotgrid_id = str(
-              sg_ay_dict["attribs"].get(SHOTGRID_ID_ATTRIB, ""))
-            if ayon_entity_sg_id != ay_shotgrid_id:
+                ay_entity.attribs.get(SHOTGRID_ID_ATTRIB, "")
+            )
+            sg_entity_sg_id = str(
+              sg_ay_dict["attribs"].get(SHOTGRID_ID_ATTRIB, "")
+            )
+            if ayon_entity_sg_id != sg_entity_sg_id:
                 ay_entity.attribs.set(
                     SHOTGRID_ID_ATTRIB,
-                    ay_shotgrid_id
+                    sg_entity_sg_id
                 )
                 ay_entity.attribs.set(
                     SHOTGRID_TYPE_ATTRIB,
@@ -117,7 +118,7 @@ def create_ay_entity_from_sg_event(
                 )
 
             update_ay_entity_custom_attributes(
-                ay_entity, sg_ay_dict, custom_attribs_map
+                ay_entity, sg_ay_dict, custom_attribs_map, ay_project=ayon_entity_hub.project_entity
             )
 
             return ay_entity
@@ -172,7 +173,7 @@ def create_ay_entity_from_sg_event(
             parent_id=ay_parent_entity.id,
             attribs=sg_ay_dict["attribs"]
         )
-    else:
+    elif sg_ay_dict["type"].lower() == "folder":
         ay_entity = ayon_entity_hub.add_new_folder(
             sg_ay_dict["folder_type"],
             name=sg_ay_dict["name"],
@@ -182,6 +183,9 @@ def create_ay_entity_from_sg_event(
             attribs=sg_ay_dict["attribs"]
         )
 
+    if not ay_entity:
+        return
+    
     ay_entity.attribs.set(
         SHOTGRID_ID_ATTRIB,
         sg_ay_dict["attribs"].get(SHOTGRID_ID_ATTRIB, "")
@@ -190,6 +194,45 @@ def create_ay_entity_from_sg_event(
         SHOTGRID_TYPE_ATTRIB,
         sg_ay_dict["attribs"].get(SHOTGRID_TYPE_ATTRIB, "")
     )
+
+    status = sg_ay_dict.get("status")
+    if status:
+        # Entity hub expects the statuses to be provided with the `name` and
+        # not the `short_name` (which is what we get from SG) so we convert
+        # the short name back to the long name before setting it
+        status_mapping = {
+            status.short_name: status.name for status in ayon_entity_hub.project_entity.statuses
+        }
+        new_status_name = status_mapping.get(status)
+        if not new_status_name:
+            logging.warning(
+                "Status with short name '%s' doesn't exist in project", status
+            )
+        else:
+            try:
+                # INFO: it was causing error so trying to set status directly
+                ay_entity.status = new_status_name
+            except ValueError as e:
+                # `ValueError: Status ip is not available on project.`
+                # NOTE: this doesn't really raise exception?
+                logging.warning(f"Status sync not implemented: {e}")
+
+    assignees = sg_ay_dict.get("assignees")
+    if assignees:
+        try:
+            # INFO: it was causing error so trying to set status directly
+            ay_entity.assignees = assignees
+        except ValueError as e:
+            logging.warning(f"Assignees sync not implemented: {e}")
+
+
+    tags = sg_ay_dict.get("tags")
+    if tags:
+        try:
+            # INFO: it was causing error so trying to set status directly
+            ay_entity.tags = [tag["name"] for tag in tags]
+        except ValueError as e:
+            logging.warning(f"Tags sync not implemented: {e}")
 
     try:
         ayon_entity_hub.commit_changes()
@@ -268,16 +311,21 @@ def update_ayon_entity_from_sg_event(
     )
 
     if not ay_entity:
-        logging.error("Unable to update a non existing entity.")
+        logging.error(
+            "Unable to update a non existing '%s' entity with id '%s'.",
+            sg_ay_dict["type"],
+            sg_ay_dict["data"].get(CUST_FIELD_CODE_ID)
+        )
         raise ValueError("Unable to update a non existing entity.")
 
     # Ensure Ayon Entity has the correct ShotGrid ID
     ayon_entity_sg_id = str(
-        ay_entity.attribs.get_attribute(SHOTGRID_ID_ATTRIB).value)
+        ay_entity.attribs.get(SHOTGRID_ID_ATTRIB, "")
+    )
     sg_entity_sg_id = str(
         sg_ay_dict["attribs"].get(SHOTGRID_ID_ATTRIB, "")
     )
-    if ayon_entity_sg_id != sg_entity_sg_id:
+    if ayon_entity_sg_id and ayon_entity_sg_id != sg_entity_sg_id:
         logging.error("Mismatching ShotGrid IDs, aborting...")
         raise ValueError("Mismatching ShotGrid IDs, aborting...")
 
@@ -286,7 +334,7 @@ def update_ayon_entity_from_sg_event(
 
     # TODO: Only update the updated fields in the event
     update_ay_entity_custom_attributes(
-        ay_entity, sg_ay_dict, custom_attribs_map
+        ay_entity, sg_ay_dict, custom_attribs_map, ay_project=ayon_entity_hub.project_entity
     )
 
     ayon_entity_hub.commit_changes()
@@ -299,6 +347,15 @@ def update_ayon_entity_from_sg_event(
                 CUST_FIELD_CODE_ID: ay_entity.id
             }
         )
+    
+    ay_entity.attribs.set(
+        SHOTGRID_ID_ATTRIB,
+        sg_ay_dict["attribs"].get(SHOTGRID_ID_ATTRIB, "")
+    )
+    ay_entity.attribs.set(
+        SHOTGRID_TYPE_ATTRIB,
+        sg_ay_dict["attribs"].get(SHOTGRID_TYPE_ATTRIB, "")
+    )
 
     return ay_entity
 

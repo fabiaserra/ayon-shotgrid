@@ -23,10 +23,10 @@ default:
 
 
 build:
-	docker build --network=host -t $(IMAGE) -f $(SERVICE)/Dockerfile .
+	docker build --network=host --build-arg CW_GROUP_CI_TOKEN=$(CW_GROUP_CI_TOKEN) -t $(IMAGE) -f $(SERVICE)/Dockerfile .
 
 build-all:
-	$(foreach service,leecher processor transmitter, docker build --network=host -t ynput/ayon-shotgrid-$(service):$(ADDON_VERSION) -f $(service)/Dockerfile . &)
+	$(foreach service,leecher processor transmitter, docker build --network=host --build-arg CW_GROUP_CI_TOKEN=$(CW_GROUP_CI_TOKEN) -t ynput/ayon-shotgrid-$(service):$(ADDON_VERSION) -f $(service)/Dockerfile . &)
 
 clean:
 	if docker images "$(IMAGE)"; then \

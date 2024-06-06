@@ -70,7 +70,8 @@ class AyonShotgridHub:
 
     custom_attribs_map = {
         "status": "status_list",
-        "tags": "tags"
+        "tags": "tags",
+        "assignees": "task_assignees"
     }
 
     def __init__(self,
@@ -426,6 +427,7 @@ class AyonShotgridHub:
                     ayon_event,
                     self._sg,
                     self._ay_project,
+                    self.custom_attribs_map,
                 )
             case "entity.task.attrib_changed" | "entity.folder.attrib_changed":
                 attrib_key = next(iter(ayon_event["payload"]["newValue"]))

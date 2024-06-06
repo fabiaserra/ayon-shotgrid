@@ -77,7 +77,8 @@ class ShotgridProcessor:
             }
             self.custom_attribs_map.update({
                 "status": "status_list",
-                "tags": "tags"
+                "tags": "tags",
+                "assignees": "task_assignees"
             })
 
             self.custom_attribs_types = {
