@@ -329,7 +329,7 @@ class ShotgridListener:
             },
         )
 
-        self.log.info("Dispatched Ayon event with payload:", payload)
+        self.log.info("Dispatched Ayon event with payload: %s", payload)
 
 
 def service_main():

@@ -349,7 +349,10 @@ def update_ayon_entity_from_sg_event(
     log.debug(f"Updating Ayon Entity: {ay_entity.name}")
 
     if ayon_entity_sg_id and ayon_entity_sg_id != sg_entity_sg_id:
-        log.error("Mismatching ShotGrid IDs, aborting...")
+        log.error(
+            "Mismatching ShotGrid IDs ('%s' (AYON) != '%s' (SG)), aborting...",
+            ayon_entity_sg_id, sg_entity_sg_id
+        )
         raise ValueError("Mismatching ShotGrid IDs, aborting...")
 
     ay_entity.name = sg_ay_dict["name"]
