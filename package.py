@@ -1,6 +1,6 @@
 name = "shotgrid"
 title = "Shotgrid"
-version = "0.4.2-ax.6"
+version = "0.4.3-ax.1"
 client_dir = "ayon_shotgrid"
 
 services = {
@@ -11,3 +11,7 @@ services = {
     "ShotgridTransmitter": {
         "image": f"ynput/ayon-shotgrid-transmitter:{version}"},
 }
+ayon_required_addons = {
+    "core": ">=0.3.0",
+}
+ayon_compatible_addons = {}

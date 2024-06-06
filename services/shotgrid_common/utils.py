@@ -1,5 +1,7 @@
+import os
+import logging
 import collections
-from typing import Dict, Optional
+from typing import Dict, Optional, Union
 
 from constants import (
     AYON_SHOTGRID_ATTRIBUTES_MAP,
@@ -11,12 +13,61 @@ from constants import (
     SHOTGRID_TYPE_ATTRIB,
 )
 
-from ayon_api.entity_hub import ProjectEntity
+from ayon_api.entity_hub import (
+    ProjectEntity,
+    TaskEntity,
+    FolderEntity,
+)
 from ayon_api.utils import slugify_string
 from ayon_api import get_attributes_for_type
 
-from nxtools import logging
 import shotgun_api3
+
+
+_loggers = {}
+
+
+def get_logger(name: str) -> logging.Logger:
+    """Return a logger instance with the given name."""
+    if name in _loggers:
+        return _loggers[name]
+
+    # get environment variable DEBUG level
+    log_level = os.environ.get("LOGLEVEL", "INFO").upper()
+
+    logger = logging.Logger(name)
+    _loggers[name] = logger
+    # create console handler and set level to debug
+    ch = logging.StreamHandler()
+    ch.setLevel(log_level)
+
+    formatting_str = (
+        "%(asctime)s.%(msecs)03d %(levelname)s: %(message)s"
+    )
+
+    if log_level == "DEBUG":
+        formatting_str = (
+            "%(asctime)s.%(msecs)03d | %(module)s | %(funcName)s | "
+            "%(levelname)s: %(message)s"
+        )
+
+    # create formatter
+    formatter = logging.Formatter(
+        fmt=formatting_str,
+        datefmt="%Y-%m-%d %H:%M:%S",
+    )
+
+    # add formatter to ch
+    ch.setFormatter(formatter)
+
+    # add ch to logger
+    logger.addHandler(ch)
+
+    return logger
+
+
+# create logger
+log = get_logger(__name__)
 
 
 def _sg_to_ay_dict(
@@ -231,7 +282,6 @@ def create_ay_fields_in_sg_project(
             attribute containing the type of data and the scope of the
             attribute.
     """
-    # NOTE: this is not needed?
     ayon_attribs_mapping = {
         attr_name: attr_dict["type"]
         for attr_name, attr_dict in get_attributes_for_type("folder").items()
@@ -364,7 +414,7 @@ def create_asset_category(entity_hub, parent_entity, sg_ay_dict):
 
     asset_category_entity = entity_hub.add_new_folder(**asset_category_entity)
 
-    logging.info(f"Created AssetCategory: {asset_category_entity}")
+    log.info(f"Created AssetCategory: {asset_category_entity}")
     return asset_category_entity
 
 
@@ -380,14 +430,8 @@ def get_asset_category(entity_hub, parent_entity, sg_ay_dict):
         entity_hub (ayon_api.EntityHub): The project's entity hub.
         parent_entity: Ayon parent entity.
         sg_ay_dict (dict): The ShotGrid entity ready for Ayon consumption.
-    """
-    entity_hub.query_entities_from_server()
-    asset_categories = [
-        entity
-        for entity in entity_hub.entities
-        if entity.entity_type.lower() == "folder" and entity.folder_type == "AssetCategory"  # noqa
-    ]
 
+    """
     # just in case the asset type doesn't exist yet
     if not sg_ay_dict["data"].get("sg_asset_type"):
         sg_ay_dict["data"]["sg_asset_type"] = sg_ay_dict["name"]
@@ -395,17 +439,23 @@ def get_asset_category(entity_hub, parent_entity, sg_ay_dict):
     asset_category_name = slugify_string(
         sg_ay_dict["data"]["sg_asset_type"]).lower()
 
-    for asset_category in asset_categories:
+    asset_categories = [
+        entity
+        for entity in parent_entity.get_children()
         if (
-            asset_category.name == asset_category_name
-            and asset_category.parent.id == parent_entity.id
-        ):
-            return asset_category
+            entity.entity_type == "folder"
+            and entity.folder_type == "AssetCategory"
+            and entity.name == asset_category_name
+        )
+    ]
+
+    for asset_category in asset_categories:
+        return asset_category
 
     try:
         return create_asset_category(entity_hub, parent_entity, sg_ay_dict)
-    except Exception as e:
-        logging.error(f"Unable to create AssetCategory. {e}")
+    except Exception:
+        log.error("Unable to create AssetCategory.", exc_info=True)
 
     return None
 
@@ -449,11 +499,12 @@ def get_or_create_sg_field(
                 properties=field_properties,
             )
             return attribute_exists
-        except Exception as e:
-            logging.error(
-                f"Can't create ShotGrid field {sg_entity_type} > {field_code}."
+        except Exception:
+            log.error(
+                "Can't create ShotGrid field "
+                f"{sg_entity_type} > {field_code}.",
+                exc_info=True
             )
-            logging.error(e)
 
     return attribute_exists
 
@@ -615,7 +666,9 @@ def get_sg_entities(
             if task_assignees:
                 task_assignees_list = []
                 for assignee in task_assignees:
-                    sg_user = get_sg_user_by_id(sg_session, assignee["id"], extra_fields=["login"])
+                    sg_user = get_sg_user_by_id(
+                        sg_session, assignee["id"], extra_fields=["login"]
+                    )
                     task_assignees_list.append(sg_user["login"])
                 
                 sg_entity["task_assignees"] = task_assignees_list
@@ -638,7 +691,7 @@ def get_sg_entity_as_ay_dict(
     sg_type: str,
     sg_id: int,
     project_code_field: str,
-    custom_attribs_map: Optional[dict] = None,
+    custom_attribs_map: Optional[Dict[str, str]] = None,
     extra_fields: Optional[list] = None,
     retired_only: Optional[bool] = False,
 ) -> dict:
@@ -649,8 +702,8 @@ def get_sg_entity_as_ay_dict(
         sg_type (str): The ShotGrid entity type.
         sg_id (int): ShotGrid ID of the entity to query.
         project_code_field (str): The ShotGrid project code field.
-        custom_attribs_map (dict): Dictionary that maps names of attributes in
-            AYON to ShotGrid equivalents.
+        custom_attribs_map (Optional[dict]): Dictionary that maps names of
+            attributes in AYON to ShotGrid equivalents.
         extra_fields (Optional[list]): List of optional fields to query.
         retired_only (bool): Whether to return only retired entities.
     Returns:
@@ -690,7 +743,9 @@ def get_sg_entity_as_ay_dict(
     if task_assignees:
         task_assignees_list = []
         for assignee in task_assignees:
-            sg_user = get_sg_user_by_id(sg_session, assignee["id"], extra_fields=["login"])
+            sg_user = get_sg_user_by_id(
+                sg_session, assignee["id"], extra_fields=["login"]
+            )
             task_assignees_list.append(sg_user["login"])
         
         sg_entity["task_assignees"] = task_assignees_list
@@ -884,7 +939,7 @@ def get_sg_project_enabled_entities(
     )
 
     if not sg_project:
-        logging.error(
+        log.error(
             f"Unable to find {sg_project} in the ShotGrid instance."
         )
         return []
@@ -1061,7 +1116,7 @@ def get_sg_custom_attributes_data(
 
 
 def update_ay_entity_custom_attributes(
-    ay_entity: dict,
+    ay_entity: Union[ProjectEntity, FolderEntity, TaskEntity],
     sg_ay_dict: dict,
     custom_attribs_map: dict,
     values_to_update: Optional[list] = None,
