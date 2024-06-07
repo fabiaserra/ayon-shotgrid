@@ -1,7 +1,11 @@
+import os
 from pprint import pformat
-import re
 
+import ayon_api
 import pyblish.api
+from ayon_api.operations import (
+    OperationsSession
+)
 
 from ayon_core.lib import path_tools
 from ayon_core.pipeline.publish import get_publish_repre_path
@@ -48,10 +52,6 @@ class IntegrateShotgridVersion(pyblish.api.InstancePlugin):
         # the corresponding SG version
         data_to_update = {}
 
-        intent = context.data.get("intent")
-        if intent:
-            data_to_update["sg_status_list"] = intent["value"]
-
         for representation in instance.data.get("representations", []):
             self.log.debug(pformat(representation))
 
@@ -87,11 +87,21 @@ class IntegrateShotgridVersion(pyblish.api.InstancePlugin):
             # if there's more than one
             else:
                 data_to_update["sg_path_to_main_representation"] = local_path
-                data_to_update["sg_status_list"] = "na"
 
-        sg_status = instance.data.get("sg_status")
-        if sg_status:
-            data_to_update["sg_status_list"] = sg_status
+        # Update status
+        sg_status = instance.data.get("sg_status") or instance.data.get("status")
+
+        # If we don't have any status set we default to Pending review (rev)
+        # as set in our internal SG default
+        # TODO: expose the status defaults in AYON settings and/or pick the default
+        # from SG
+        if not sg_status:
+            if instance.data.get("productType") in {"workfile", }:
+                sg_status = "na"
+            else:
+                sg_status = "rev"
+        
+        data_to_update["sg_status_list"] = sg_status
 
         # Fill up source path field
         source_path = instance.data.get("source")
@@ -196,6 +206,33 @@ class IntegrateShotgridVersion(pyblish.api.InstancePlugin):
         sg_session.update("Version", sg_version["id"], data_to_update)
 
         instance.data["shotgridVersion"] = sg_version
+
+        # Update AYON version entity with updated data
+        update_data = {
+            "attrib": {
+                "shotgridId": str(version_id),
+                "shotgridType": "Version"
+            },
+        }
+
+        # We need to map the SG status short name to the long name as AYON
+        # expects that longer name
+        project_statuses = ayon_api.get_project(os.getenv("SHOW"))["statuses"]
+        for proj_status in project_statuses:
+            if proj_status["shortName"] == sg_status:
+                update_data["status"] = proj_status["name"]
+                break
+
+        op_session = OperationsSession()
+        version_entity = instance.data["versionEntity"]
+        op_session.update_entity(
+            instance.context.data["projectName"],
+            "version",
+            version_entity["id"],
+            update_data
+        )
+        op_session.commit()
+        self.log.info("Updated AYON version with %s", update_data)
 
     def _find_existing_version(self, version_name, instance):
         """Find if a Version already exists in ShotGrid.
