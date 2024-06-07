@@ -8,6 +8,7 @@ from ayon_api.operations import (
 )
 
 from ayon_core.lib import path_tools
+from ayon_core.pipeline import get_current_project_name
 from ayon_core.pipeline.publish import get_publish_repre_path
 from ayon_core.lib.transcoding import (
     VIDEO_EXTENSIONS,
@@ -217,7 +218,8 @@ class IntegrateShotgridVersion(pyblish.api.InstancePlugin):
 
         # We need to map the SG status short name to the long name as AYON
         # expects that longer name
-        project_statuses = ayon_api.get_project(os.getenv("SHOW"))["statuses"]
+        project_name = get_current_project_name()
+        project_statuses = ayon_api.get_project(project_name)["statuses"]
         for proj_status in project_statuses:
             if proj_status["shortName"] == sg_status:
                 update_data["status"] = proj_status["name"]
