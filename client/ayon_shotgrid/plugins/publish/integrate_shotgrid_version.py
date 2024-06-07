@@ -211,7 +211,7 @@ class IntegrateShotgridVersion(pyblish.api.InstancePlugin):
         # Update AYON version entity with updated data
         update_data = {
             "attrib": {
-                "shotgridId": str(version_id),
+                "shotgridId": sg_version["id"],
                 "shotgridType": "Version"
             },
         }
