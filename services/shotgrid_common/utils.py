@@ -1,6 +1,7 @@
 import os
 import logging
 import collections
+from datetime import datetime
 from typing import Dict, Optional, Union
 
 from constants import (
@@ -152,6 +153,11 @@ def _sg_to_ay_dict(
             if sg_value is None:
                 continue
             
+            # Quick hack to workaround AYON EntityHub not supporting passing
+            # a date as a string
+            if "date" in ay_attrib.lower():
+                sg_value = datetime.strptime(sg_value, "%Y-%m-%d")
+
             if ay_attrib in exception_attribs:
                 sg_ay_dict[ay_attrib] = sg_value
             else:
