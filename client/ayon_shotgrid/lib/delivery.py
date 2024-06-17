@@ -184,9 +184,10 @@ def get_entity_hierarchy_overrides(
     sg,
     entity_id,
     entity_type,
-    delivery_types,
+    delivery_types=None,
     query_representation_names=False,
     query_ffmpeg_args=False,
+    extra_fields=None,
     stop_when_found=False,
 ):
     """
@@ -200,6 +201,7 @@ def get_entity_hierarchy_overrides(
         delivery_types (list): A list of delivery types to search for.
         query_representation_names (bool): Whether to query representation names.
         query_ffmpeg_args (bool): Whether to query ffmpeg arguments of the output types.
+        extra_fields (list[str]): List of extra SG fields to query.
         stop_when_found (bool): Whether to stop searching when a delivery override is
             found.
 
@@ -229,9 +231,12 @@ def get_entity_hierarchy_overrides(
     if query_representation_names or query_ffmpeg_args:
         base_query_fields.extend(SG_DELIVERY_OUTPUT_FIELDS)
 
+    if extra_fields:
+        base_query_fields.extend(extra_fields)
+
     # If we are not requesting all delivery types we only keep the fields
     # that are specific to the delivery type being requested
-    if len(delivery_types) == 1:
+    if delivery_types and len(delivery_types) == 1:
         base_query_fields = [f for f in base_query_fields if delivery_types[0] in f]
 
     # Create a dictionary of delivery overrides per entity
