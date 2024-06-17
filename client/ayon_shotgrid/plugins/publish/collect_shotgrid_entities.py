@@ -1,8 +1,9 @@
 import collections
 
 import pyblish.api
-
 from ayon_core.pipeline import KnownPublishError
+
+from ayon_shotgrid.lib import delivery
 
 
 class CollectShotgridEntities(pyblish.api.ContextPlugin):
@@ -69,6 +70,22 @@ class CollectShotgridEntities(pyblish.api.ContextPlugin):
             instance.data["shotgridProject"] = sg_project
             instance.data["shotgridEntity"] = sg_asset
             instance.data["shotgridTask"] = sg_task
+            
+            ### Starts Alkemy-X Override ###
+            # Collect relevant data for review/delivery purposes
+            hierarchy_overrides = delivery.get_entity_hierarchy_overrides(
+                context.data.get("shotgridSession"),
+                instance.data["shotgridEntity"]["id"],
+                instance.data["shotgridEntity"]["type"],
+                delivery_types=None,
+                extra_fields=["colorspace"]
+            )
+            self.log.debug(
+                "Collected SG hierarchy overrides : %s",
+                hierarchy_overrides
+            )
+            instance.data["shotgridOverrides"] = hierarchy_overrides
+            ### Ends Alkemy-X Override ###
 
     def _get_sg_entities_by_id(self, context, sg_session):
         """ Get all instances assets from Shotgrid.
