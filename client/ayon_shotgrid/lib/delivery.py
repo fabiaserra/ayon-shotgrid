@@ -3,7 +3,8 @@
 import itertools
 from collections import OrderedDict
 
-from openpype.lib import Logger
+from ayon_core.lib import Logger
+
 
 logger = Logger.get_logger(__name__)
 
