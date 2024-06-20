@@ -78,7 +78,7 @@ class CollectShotgridEntities(pyblish.api.ContextPlugin):
                 instance.data["shotgridEntity"]["id"],
                 instance.data["shotgridEntity"]["type"],
                 delivery_types=None,
-                extra_fields=["colorspace"]
+                extra_fields=["sg_colorspace"]
             )
             self.log.debug(
                 "Collected SG hierarchy overrides : %s",
