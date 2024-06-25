@@ -102,7 +102,7 @@ class ShotgridAddon(AYONAddon, ITrayAddon, IPluginPaths):
         if self._client_login_type == "env":
             log.debug("Logging in to Flow using env")
             sg_username = (
-                os.getenv("AYON_SG_USERNAME")
+                os.getenv("AYON_USERNAME")
                 # TODO: Remove USER env variable in future once ayon-core deadline
                 # passing of AYON_SG_USERNAME is solved
                 or os.getenv("USER")
