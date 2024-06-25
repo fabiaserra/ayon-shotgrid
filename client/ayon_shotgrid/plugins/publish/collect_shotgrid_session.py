@@ -13,9 +13,7 @@ class CollectShotgridSession(pyblish.api.ContextPlugin):
 
     def process(self, context):
         user_login = (
-            os.getenv("AYON_SG_USERNAME")
-            # TODO: Remove USER env variable in future once ayon-core deadline
-            # passing of AYON_SG_USERNAME is solved
+            os.getenv("AYON_USERNAME")
             or os.getenv("USER")
         )
         self.log.info(f"User login: {user_login}")
