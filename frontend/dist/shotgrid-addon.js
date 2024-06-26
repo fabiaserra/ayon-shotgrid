@@ -92,7 +92,7 @@ const populateTable = async () => {
     sgSyncButton.disabled = true;
 
     if (project.shotgridId && project.code) {
-      if (/^["a-zA-Z0-9_"]{1,32}/.test(project.name) && /^[a-zA-Z][a-zA-Z0-9]+/.test(project.code)) {
+      if (/^[a-zA-Z][a-zA-Z0-9]+/.test(project.code)) {
         // Only Enable button if its a valid name and code
         sgSyncButton.disabled = false;
         sgSyncButton.setAttribute("data-ayon-name", project.name);
