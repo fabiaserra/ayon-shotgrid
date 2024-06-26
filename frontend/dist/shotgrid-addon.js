@@ -296,10 +296,8 @@ const getShotgridProjects = async () => {
 
   if (sgProjects) {
     sgProjects.forEach((project) => {
-      /* Only add projects that don't contain whitespaces in the name
-      and have a code name as those are the requirements to sync to Ayon. */
+      /* Only add projects that have a code name as those are the requirements to sync to Ayon. */
       if (
-        !project.attributes.name.includes(" ") &&
         project.attributes[`${addonSettings.shotgrid_project_code_field}`]
       ) {
         sgProjectsConformed.push({
