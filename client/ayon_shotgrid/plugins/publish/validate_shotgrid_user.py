@@ -11,6 +11,21 @@ class ValidateShotgridUser(pyblish.api.ContextPlugin):
     label = "Validate Shotgrid User"
     order = ValidateContentsOrder
 
+    def user_has_tasks_assigned(sg_session, user_id, project_id):
+        """Check if a user has any tasks assigned in a given project"""
+        # Find tasks assigned to the user in the specified project
+        tasks = sg_session.find(
+            "Task",
+            [
+                ["project.Project.id", "is", project_id],
+                ["task_assignees.HumanUser.id", "is", user_id]
+            ],
+            ["id"]
+        )
+        
+        # Return True if tasks are found, otherwise False
+        return len(tasks) > 0
+
     def process(self, context):
         sg_session = context.data.get("shotgridSession")
         user_login = context.data.get("shotgridUser")
@@ -42,19 +57,11 @@ class ValidateShotgridUser(pyblish.api.ContextPlugin):
                     break
 
         if not sg_user_has_permission:
-            raise PublishValidationError(
-                "Login {0} doesn't have access to the project {1} <{2}>".format(
-                    user_login, project_name, sg_project
-                )
+            sg_user_has_permission = self.user_has_tasks_assigned(
+                sg_session, sg_user["id"], sg_project
             )
-
-        self.log.info("Found User in Shotgrid: {}".format(sg_user))
-
-        admin = sg_user["permission_rule_set"]["name"] == "Admin"
-
-        self.log.info("Found User in Shotgrid: {}".format(sg_user))
-
-        if not sg_user and not admin:
+        
+        if not sg_user_has_permission:
             raise PublishValidationError(
                 "Login {0} doesn't have access to the project {1} <{2}>".format(
                     user_login, project_name, sg_project
