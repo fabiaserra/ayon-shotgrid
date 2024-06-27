@@ -42,7 +42,7 @@ from ayon_api.entity_hub import EntityHub
 from utils import get_logger
 
 
-PROJECT_NAME_REGEX = re.compile("^[a-zA-Z0-9_]+$")
+PROJECT_NAME_REGEX = re.compile("^[a-zA-Z0-9_-]+$")
 
 
 class AyonShotgridHub:

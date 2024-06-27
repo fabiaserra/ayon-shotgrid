@@ -295,13 +295,19 @@ const getShotgridProjects = async () => {
   var sgProjectsConformed = []
 
   if (sgProjects) {
+    function slugify(inputString) {
+      return inputString
+          .replace(/\s+/g, '')  // Remove all whitespaces
+          .replace(/\//g, '_'); // Replace all '/' with '_'
+    }
+    
     sgProjects.forEach((project) => {
       /* Only add projects that have a code name as those are the requirements to sync to Ayon. */
       if (
         project.attributes[`${addonSettings.shotgrid_project_code_field}`]
       ) {
         sgProjectsConformed.push({
-          "name": project.attributes.name,
+          "name": slugify(project.attributes.name),
           "code": project.attributes[`${addonSettings.shotgrid_project_code_field}`],
           "shotgridId": project.id,
           "ayonId": project.attributes.sg_ayon_id,
