@@ -33,7 +33,7 @@ from utils import (
     create_ay_fields_in_sg_entities,
     create_sg_entities_in_ay,
     get_sg_project_enabled_entities,
-    get_sg_project_by_name,
+    get_sg_project_by_code_name,
 )
 
 import ayon_api
@@ -106,8 +106,8 @@ class AyonShotgridHub:
         else:
             self.sg_enabled_entities = list(AYON_SHOTGRID_ENTITY_TYPE_MAP)
 
-        self.project_name = project_name
         self.project_code = project_code
+        self.project_name = project_name
 
     def create_sg_attributes(self):
         """Create all AYON needed attributes in Shotgrid."""
@@ -152,13 +152,14 @@ class AyonShotgridHub:
             custom_fields.extend([f"sg_{attrib}", attrib])
 
         try:
-            self._sg_project = get_sg_project_by_name(
+            self._sg_project = get_sg_project_by_code_name(
                 self._sg,
-                self.project_name,
+                self.project_code,
+                self.sg_project_code_field,
                 custom_fields=custom_fields
             )
         except Exception as e:
-            self.log.warning(f"Project {project_name} does not exist in Shotgrid. ")
+            self.log.warning(f"Project with code {self.project_code} does not exist in Shotgrid. ")
             self._sg_project = None
 
     def create_project(self):
@@ -187,7 +188,7 @@ class AyonShotgridHub:
         self._ay_project.commit_changes()
 
         if self._sg_project is None:
-            self.log.info(f"Creating Shotgrid project {self.project_name} (self.project_code).")
+            self.log.info(f"Creating Shotgrid project {self.project_name} ({self.project_code}).")
             self._sg_project = self._sg.create(
                 "Project",
                 {

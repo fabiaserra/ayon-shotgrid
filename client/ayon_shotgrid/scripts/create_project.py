@@ -27,7 +27,7 @@ def create_project(project_code):
 
     project_name = sg_project["name"]
 
-    # Create OP project
+    # Create AYON project
     try:
         ayon_api.create_project(
             project_name,

@@ -927,6 +927,37 @@ def get_sg_project_by_name(
     return sg_project
 
 
+def get_sg_project_by_code_name(
+    sg_session: shotgun_api3.Shotgun,
+    code_name: str,
+    project_code_field: str,
+    custom_fields: list = None,
+) -> dict:
+    """ Find a project in ShotGrid by its name.
+
+    Args:
+        sg_session (shotgun_api3.Shotgun): Shotgun Session object.
+        code_name (str): The project name to look for.
+    Returns:
+        sg_project (dict): ShotGrid Project dict.
+    """
+    common_fields = ["id", project_code_field, "name", "sg_status"]
+
+    if custom_fields and isinstance(custom_fields, list):
+        common_fields += custom_fields
+
+    sg_project = sg_session.find_one(
+        "Project",
+        [[project_code_field, "is", code_name]],
+        fields=common_fields,
+    )
+
+    if not sg_project:
+        raise ValueError(f"Unable to find project {code_name} in ShotGrid.")
+
+    return sg_project
+
+
 def get_sg_project_enabled_entities(
     sg_session: shotgun_api3.Shotgun,
     sg_project: dict,

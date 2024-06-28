@@ -296,9 +296,11 @@ const getShotgridProjects = async () => {
 
   if (sgProjects) {
     function slugify(inputString) {
-      return inputString
-          .replace(/\s+/g, '')  // Remove all whitespaces
-          .replace(/\//g, '_'); // Replace all '/' with '_'
+        return inputString
+            .trim()                         // Remove leading and trailing whitespaces
+            .replace(/^\W+/, '')            // Remove non-alphanumeric characters from the beginning
+            .replace(/\s+/g, '')            // Remove all whitespaces
+            .replace(/[-/]/g, '_');         // Replace all hyphens and '/' with '_'
     }
     
     sgProjects.forEach((project) => {
