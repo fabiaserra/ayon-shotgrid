@@ -155,7 +155,7 @@ def _sg_to_ay_dict(
             
             # Quick hack to workaround AYON EntityHub not supporting passing
             # a date as a string
-            if "date" in ay_attrib.lower():
+            if "date" in ay_attrib.lower() and isinstance(sg_value, str):
                 sg_value = datetime.strptime(sg_value, "%Y-%m-%d")
 
             if ay_attrib in exception_attribs:
