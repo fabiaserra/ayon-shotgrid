@@ -59,7 +59,7 @@ tag-version:
   script:
     - IMAGE_TAG=${VERSION}
     - >
-      if release-cli get --tag-name "${IMAGE_TAG}"; then
+      if release-cli get "${IMAGE_TAG}"; then
         echo "Release "${IMAGE_TAG}" already exists, updating..."
         release-cli update --description "Release ${IMAGE_TAG} using CI pipeline $CI_PIPELINE_ID" --tag-name "${IMAGE_TAG}"
       else
