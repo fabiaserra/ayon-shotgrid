@@ -5,7 +5,6 @@ stages:
   - tag
   - build
   - deploy
-  - release
 
 get-version:
   stage: get-version
@@ -49,6 +48,16 @@ upload-addon:
   script:
     - python -m pip install ayon-python-api
     - python deploy_addon.py
+
+.git-setup: &git-setup
+  before_script:
+    - apk add --no-cache git
+    - URL_WITH_AUTH="https://gitlab-ci-token:${CI_TOKEN}@$(echo $CI_PROJECT_URL | sed 's|https://||')"
+    - git clone "${URL_WITH_AUTH}.git" "${CI_COMMIT_SHA}"
+    - git config --global user.email "${GITLAB_USER_EMAIL}"
+    - git config --global user.name "${GITLAB_USER_LOGIN}"
+    - cd "${CI_COMMIT_SHA}"
+    - git checkout -B ${CI_COMMIT_BRANCH} remotes/origin/${CI_COMMIT_BRANCH} --
 
 tag-version:
   stage: tag
@@ -131,15 +140,6 @@ build-shotgrid-transmitter:
       --build-arg CW_GROUP_CI_TOKEN=${CW_GROUP_CI_TOKEN}
       --destination "${CI_REGISTRY_IMAGE}/ayon-shotgrid-transmitter:${VERSION}-${CI_COMMIT_SHORT_SHA}"
 
-.git-setup: &git-setup
-  before_script:
-    - apk add --no-cache git
-    - URL_WITH_AUTH="https://gitlab-ci-token:${CI_TOKEN}@$(echo $CI_PROJECT_URL | sed 's|https://||')"
-    - git clone "${URL_WITH_AUTH}.git" "${CI_COMMIT_SHA}"
-    - git config --global user.email "${GITLAB_USER_EMAIL}"
-    - git config --global user.name "${GITLAB_USER_LOGIN}"
-    - cd "${CI_COMMIT_SHA}"
-    - git checkout -B ${CI_COMMIT_BRANCH} remotes/origin/${CI_COMMIT_BRANCH} --
 
 update-helm-chart:
   stage: deploy
