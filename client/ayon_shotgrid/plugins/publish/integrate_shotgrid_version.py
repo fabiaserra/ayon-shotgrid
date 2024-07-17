@@ -206,6 +206,15 @@ class IntegrateShotgridVersion(pyblish.api.InstancePlugin):
         self.log.info(f"Updating Shotgrid version with {data_to_update}")
         sg_session.update("Version", sg_version["id"], data_to_update)
 
+        # Update Task to review after any publish
+        if instance.data["shotgridTask"]:
+            self.log.info(f"Updating Shotgrid task to 'Pending Review'")
+            sg_session.update(
+                "Task",
+                instance.data["shotgridTask"]["id"],
+                {"sg_status_list": "rev"}
+            )
+
         instance.data["shotgridVersion"] = sg_version
 
         # Update AYON version entity with updated data
