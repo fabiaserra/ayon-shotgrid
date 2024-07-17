@@ -55,7 +55,7 @@ tag-version:
     - get-version
   tags:
     - kube
-  image: registry.gitlab.com/gitlab-org/release-cli:latest
+  image: registry.gitlab.com/gitlab-org/release-cli:v0.18.0
   script:
     - IMAGE_TAG=${VERSION}
     - >
