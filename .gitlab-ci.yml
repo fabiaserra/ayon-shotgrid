@@ -23,10 +23,9 @@ get-version:
     reports:
       dotenv: version_info.txt
   rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_COMMIT_BRANCH != $CI_COMMIT_TAG
+    - if: $CI_COMMIT_BRANCH == "release/alkemyx"
     - if: $CI_COMMIT_TAG
       when: never
-    - when: manual
 
 create-package:
   stage: create
@@ -53,17 +52,21 @@ upload-addon:
 
 tag-version:
   stage: tag
-  tags:
-    - kube
   dependencies:
     - get-version
+  tags:
+    - kube
   image: registry.gitlab.com/gitlab-org/release-cli:latest
   script:
-    - echo "Tagging repository with ${VERSION}"
-  release:
-    tag_name: '$VERSION'
-    description: 'Release $VERSION using CI pipeline $CI_PIPELINE_ID'
-  when: on_success
+    - IMAGE_TAG=${VERSION}
+    - >
+      if release-cli get --tag-name "${IMAGE_TAG}"; then
+        echo "Release "${IMAGE_TAG}" already exists, updating..."
+        release-cli update --description "Release ${IMAGE_TAG} using CI pipeline $CI_PIPELINE_ID" --tag-name "${IMAGE_TAG}"
+      else
+        echo "Release "${IMAGE_TAG}" does not exist, creating..."
+        release-cli create --description "Release ${IMAGE_TAG} using CI pipeline $CI_PIPELINE_ID" --tag-name "${IMAGE_TAG}"
+      fi
 
 build-shotgrid-leecher:
   stage: build
@@ -127,12 +130,6 @@ build-shotgrid-transmitter:
       --dockerfile "${CI_PROJECT_DIR}/services/transmitter/Dockerfile"
       --build-arg CW_GROUP_CI_TOKEN=${CW_GROUP_CI_TOKEN}
       --destination "${CI_REGISTRY_IMAGE}/ayon-shotgrid-transmitter:${VERSION}-${CI_COMMIT_SHORT_SHA}"
-  rules:
-    - if: $CI_COMMIT_BRANCH == "release/alkemyx"
-      changes:
-        - services/**/*
-    - if: $CI_COMMIT_TAG
-      when: never
 
 .git-setup: &git-setup
   before_script:
@@ -148,6 +145,9 @@ update-helm-chart:
   stage: deploy
   dependencies:
     - get-version
+    - build-shotgrid-transmitter
+    - build-shotgrid-leecher
+    - build-shotgrid-processor
   tags:
     - kube
   extends: .git-setup
@@ -163,34 +163,3 @@ update-helm-chart:
     - git commit -m "Update Helm chart with new tag [ci skip]"
     - git diff-index --quiet HEAD || git commit -am '[skip ci] values.yml update'
     - git push origin "${CI_COMMIT_BRANCH}"
-  rules:
-    - if: $CI_COMMIT_BRANCH == "release/alkemyx"
-      changes:
-        - services/**/*
-    - if: $CI_COMMIT_TAG
-      when: never
-  when: on_success
-
-release-patch:
-  stage: release
-  dependencies:
-    - get-version
-  tags:
-    - kube
-  image: registry.gitlab.com/gitlab-org/release-cli:latest
-  script:
-    - IMAGE_TAG=${VERSION}
-    - >
-      if release-cli get --tag-name "${IMAGE_TAG}"; then
-        echo "Release "${IMAGE_TAG}" already exists, updating..."
-        release-cli update --description "Release ${IMAGE_TAG} using CI pipeline $CI_PIPELINE_ID" --tag-name "${IMAGE_TAG}"
-      else
-        echo "Release "${IMAGE_TAG}" does not exist, creating..."
-        release-cli create --description "Release ${IMAGE_TAG} using CI pipeline $CI_PIPELINE_ID" --tag-name "${IMAGE_TAG}"
-      fi
-  rules:
-    - if: $CI_COMMIT_BRANCH == "release/alkemyx"
-      changes:
-        - services/**/*
-    - if: $CI_COMMIT_TAG
-      when: never
