@@ -21,4 +21,4 @@ version: 0.4.3-ax.18
 # incremented each time you make changes to the application. Versions are not expected to
 # follow Semantic Versioning. They should reflect the version the application is using.
 # It is recommended to use it with quotes.
-appVersion: "0.4.3-ax.18-32933b17"
+appVersion: "0.4.3-ax.18-bc61d688"
