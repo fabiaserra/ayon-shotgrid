@@ -321,7 +321,7 @@ def update_ayon_entity_from_sg_event(
                 custom_attribs_map
             )
         except Exception:
-            log.debug("AYON Entity could not be created", exc_info=True)
+            log.error("AYON Entity could not be created", exc_info=True)
         return
 
     ay_entity = ayon_entity_hub.get_or_query_entity_by_id(

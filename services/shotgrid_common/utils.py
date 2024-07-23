@@ -34,7 +34,7 @@ def get_logger(name: str) -> logging.Logger:
         return _loggers[name]
 
     # get environment variable DEBUG level
-    log_level = os.environ.get("LOGLEVEL", "INFO").upper()
+    log_level = os.environ.get("LOGLEVEL", "DEBUG").upper()
 
     logger = logging.Logger(name)
     _loggers[name] = logger
@@ -1175,6 +1175,8 @@ def update_ay_entity_custom_attributes(
         attrib_value = sg_ay_dict["attribs"].get(ay_attrib) or sg_ay_dict.get(ay_attrib)
         if attrib_value is None:
             continue
+        
+        logging.debug("Updating '%s' attribute with '%s", ay_attrib, attrib_value)
 
         if ay_attrib == "tags":
             ay_entity.tags = [tag["name"] for tag in attrib_value]
