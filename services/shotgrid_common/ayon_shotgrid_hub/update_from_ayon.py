@@ -386,7 +386,6 @@ def _create_sg_entity(
             or ay_entity.entity_type != "task"
             and ay_entity.folder_type == "AssetCategory"
     ):
-        # TODO: why not??
         # AssetCategory should not be created in Shotgrid
         # task should not be child of AssetCategory
         return
@@ -424,7 +423,7 @@ def _create_sg_entity(
 
     if not data:
         return
-    
+
     # Fill up data with any extra attributes from Ayon we want to sync to SG
     data.update(get_sg_custom_attributes_data(
         sg_session,
