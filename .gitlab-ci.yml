@@ -1,7 +1,7 @@
 include:
   - project: 'shared/ci-templates'
     file: 'ayon-addon-util.yml'
-    ref: 'ayon-addon'
+    ref: 'master'
 
 stages:
   - init
