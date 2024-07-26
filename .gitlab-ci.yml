@@ -1,77 +1,14 @@
+include:
+  - project: 'shared/ci-templates'
+    file: 'ayon-addon-util.yml'
+    ref: 'ayon-addon'
+
 stages:
-  - get-version
-  - create
-  - upload
+  - init
   - tag
+  - create
   - build
   - deploy
-
-get-version:
-  stage: get-version
-  tags:
-    - on-prem
-  image: alpine:latest
-  script:
-    - ADDON_NAME=$(sed -n 's/^name = "\([^"]*\)".*/\1/p' package.py)
-    - VERSION=$(sed -n 's/^version = "\([^"]*\)".*/\1/p' package.py)
-    - echo "ADDON_NAME=${ADDON_NAME}"
-    - echo "ADDON_NAME=${ADDON_NAME}" > version_info.txt
-    - echo "VERSION=${VERSION}"
-    - echo "VERSION=${VERSION}" >> version_info.txt
-  artifacts:
-    reports:
-      dotenv: version_info.txt
-  rules:
-    - if: $CI_COMMIT_BRANCH == "release/alkemyx"
-    - if: $CI_COMMIT_TAG
-      when: never
-
-create-package:
-  stage: create
-  tags:
-    - on-prem
-  image: python:3.9-slim
-  script:
-    - python create_package.py
-  artifacts:
-    paths:
-      - package
-  rules:
-    - if: $CI_COMMIT_TAG
-      when: never
-
-upload-addon:
-  stage: upload
-  image: python:3.9-slim
-  tags:
-    - kube
-  dependencies:
-    - get-version
-    - create-package
-  script:
-    - python -m pip install ayon-python-api
-    - python deploy_addon.py
-  rules:
-    - if: $CI_COMMIT_TAG
-      when: never
-
-tag-version:
-  stage: tag
-  dependencies:
-    - get-version
-  tags:
-    - kube
-  image: registry.gitlab.com/gitlab-org/release-cli:v0.18.0
-  script:
-    - IMAGE_TAG=${VERSION}
-    - >
-      if release-cli get --tag-name "${IMAGE_TAG}"; then
-        echo "Release "${IMAGE_TAG}" already exists, updating..."
-        release-cli update --description "Release ${IMAGE_TAG} using CI pipeline $CI_PIPELINE_ID" --tag-name "${IMAGE_TAG}"
-      else
-        echo "Release "${IMAGE_TAG}" does not exist, creating..."
-        release-cli create --description "Release ${IMAGE_TAG} using CI pipeline $CI_PIPELINE_ID" --tag-name "${IMAGE_TAG}"
-      fi
 
 build-shotgrid-leecher:
   stage: build
@@ -95,6 +32,7 @@ build-shotgrid-leecher:
         - services/**/*
     - if: $CI_COMMIT_TAG
       when: never
+    - when: manual
 
 build-shotgrid-processor:
   stage: build
@@ -118,6 +56,7 @@ build-shotgrid-processor:
         - services/**/*
     - if: $CI_COMMIT_TAG
       when: never
+    - when: manual
 
 build-shotgrid-transmitter:
   stage: build
@@ -141,6 +80,7 @@ build-shotgrid-transmitter:
         - services/**/*
     - if: $CI_COMMIT_TAG
       when: never
+    - when: manual
 
 .git-setup: &git-setup
   before_script:
