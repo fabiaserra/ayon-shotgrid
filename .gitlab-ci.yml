@@ -13,7 +13,7 @@ stages:
 build-shotgrid-leecher:
   stage: build
   dependencies:
-    - get-version
+    - init
   tags:
     - kube
   image:
@@ -37,7 +37,7 @@ build-shotgrid-leecher:
 build-shotgrid-processor:
   stage: build
   dependencies:
-    - get-version
+    - init
   tags:
     - kube
   image:
@@ -61,7 +61,7 @@ build-shotgrid-processor:
 build-shotgrid-transmitter:
   stage: build
   dependencies:
-    - get-version
+    - init
   tags:
     - kube
   image:
@@ -95,7 +95,7 @@ build-shotgrid-transmitter:
 update-helm-chart:
   stage: deploy
   dependencies:
-    - get-version
+    - init
     - build-shotgrid-transmitter
     - build-shotgrid-leecher
     - build-shotgrid-processor
