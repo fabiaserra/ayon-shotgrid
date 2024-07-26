@@ -103,6 +103,10 @@ class IntegrateShotgridShotData(pyblish.api.InstancePlugin):
             "sg_cut_out": cut_out,
             "sg_head_in": head_in,
             "sg_tail_out": tail_out,
+            # Adding source in/out as a copy of main plate range
+            # because cut in/out might change with retimes
+            "sg_source_in": head_in,
+            "sg_source_out": tail_out,
         }
 
         cut_info_batch = {
