@@ -12,6 +12,7 @@ stages:
 
 build-shotgrid-leecher:
   stage: build
+  needs: ["get-version"]
   dependencies:
     - get-version
   tags:
@@ -36,6 +37,7 @@ build-shotgrid-leecher:
 
 build-shotgrid-processor:
   stage: build
+  needs: ["get-version"]
   dependencies:
     - get-version
   tags:
@@ -60,6 +62,7 @@ build-shotgrid-processor:
 
 build-shotgrid-transmitter:
   stage: build
+  needs: ["get-version"]
   dependencies:
     - get-version
   tags:
