@@ -11,7 +11,7 @@ class ValidateShotgridUser(pyblish.api.ContextPlugin):
     label = "Validate Shotgrid User"
     order = ValidateContentsOrder
 
-    def user_has_tasks_assigned(sg_session, user_id, project_id):
+    def user_has_tasks_assigned(self, sg_session, user_id, project_id):
         """Check if a user has any tasks assigned in a given project"""
         # Find tasks assigned to the user in the specified project
         tasks = sg_session.find(
