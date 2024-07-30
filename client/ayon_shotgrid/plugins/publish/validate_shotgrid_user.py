@@ -58,7 +58,7 @@ class ValidateShotgridUser(pyblish.api.ContextPlugin):
 
         if not sg_user_has_permission:
             sg_user_has_permission = self.user_has_tasks_assigned(
-                sg_session, sg_user["id"], sg_project
+                sg_session, sg_user["id"], sg_project["id"]
             )
         
         if not sg_user_has_permission:
