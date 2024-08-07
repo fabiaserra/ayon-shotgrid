@@ -98,6 +98,11 @@ build-shotgrid-transmitter:
 
 update-helm-chart:
   stage: deploy
+  needs: 
+    - get-version
+    - build-shotgrid-transmitter
+    - build-shotgrid-leecher
+    - build-shotgrid-processor
   dependencies:
     - get-version
     - build-shotgrid-transmitter
