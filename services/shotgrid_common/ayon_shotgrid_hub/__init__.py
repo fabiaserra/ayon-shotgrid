@@ -106,8 +106,10 @@ class AyonShotgridHub:
         else:
             self.sg_enabled_entities = list(AYON_SHOTGRID_ENTITY_TYPE_MAP)
 
-        self.project_name = project_name
+        # NOTE: Don't change the order of assignments as self.project_code
+        # is used on the project_name setter function
         self.project_code = project_code
+        self.project_name = project_name
 
     def create_sg_attributes(self):
         """Create all AYON needed attributes in Shotgrid."""
