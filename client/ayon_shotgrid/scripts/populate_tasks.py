@@ -46,7 +46,7 @@ def add_tasks_to_sg_entities(project, sg_entities, entity_type, tasks):
         # There may not be a task step for this entity_type or task_name
         if not step:
             logger.info(
-                "No step found for entity type '%s' with step type '%s'", entity_type, step_name
+                "No step found for entity type '%s' with step 'short_name' == '%s'", entity_type, step_name
                 )
             continue
 
@@ -99,8 +99,8 @@ def populate_tasks(project_code):
     # NOTE: Currently the task names and the pipeline step names are
     # matching but that wouldn't necessarily be the case for all
     default_tasks = {
-        "edit": "Edit",
-        "generic": "Generic",
+        "edit": "edit",
+        "generic": "gener",
     }
 
     # Find the project with the given code
@@ -140,7 +140,7 @@ def populate_tasks(project_code):
             }
         )
         # Add 'edit' task to edit_shot
-        add_tasks_to_sg_entities(project, [_edit_shot], "Shot", {"edit": "Edit"})
+        add_tasks_to_sg_entities(project, [_edit_shot], "Shot", {"edit": "edit"})
     else:  # Remove _edit_shot from list of shots so we don't add default tasks
         shots = [item for item in shots if item.get("code") != "_edit_shot"]
 
@@ -156,7 +156,7 @@ def populate_tasks(project_code):
             }
         )
         # Add 'comp' task to 2d_shot
-        add_tasks_to_sg_entities(project, [_2d_shot], "Shot", {"comp": "Comp"})
+        add_tasks_to_sg_entities(project, [_2d_shot], "Shot", {"comp": "comp"})
     else:  # Remove _2d_shot from list of shots so we don't add default tasks
         shots = [item for item in shots if item.get("code") != "_2d_shot"]
 
@@ -172,7 +172,7 @@ def populate_tasks(project_code):
             }
         )
         # Add 'generic' task to 3d_shot
-        add_tasks_to_sg_entities(project, [_3d_shot], "Shot", {"generic": "Generic"})
+        add_tasks_to_sg_entities(project, [_3d_shot], "Shot", {"generic": "gener"})
     else:
         shots = [item for item in shots if item.get("code") != "_3d_shot"]
 
