@@ -24,7 +24,7 @@ affinity: &affinity
 
 replicaCount: 1
 
-pullPolicy: IfNotPresent
+pullPolicy: Always
 
 imagePullSecrets: []
 nameOverride: ""
