@@ -1,4 +1,3 @@
-import os
 from pprint import pformat
 
 import ayon_api
@@ -208,7 +207,7 @@ class IntegrateShotgridVersion(pyblish.api.InstancePlugin):
 
         # Update Task to review after any publish
         if instance.data["shotgridTask"]:
-            self.log.info(f"Updating Shotgrid task to 'Pending Review'")
+            self.log.info("Updating Shotgrid task to 'Pending Review'")
             sg_session.update(
                 "Task",
                 instance.data["shotgridTask"]["id"],

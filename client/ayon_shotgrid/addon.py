@@ -100,7 +100,6 @@ class ShotgridAddon(AYONAddon, ITrayAddon, IPluginPaths):
             kwargs["proxy"] = proxy
 
         if self._client_login_type == "env":
-            log.debug("Logging in to Flow using env")
             sg_username = (
                 os.getenv("AYON_USERNAME")
                 # TODO: Remove USER env variable in future once ayon-core deadline
@@ -113,7 +112,6 @@ class ShotgridAddon(AYONAddon, ITrayAddon, IPluginPaths):
                 "script_name": self._shotgrid_script_name,
             })
         elif self._client_login_type == "tray_pass":
-            log.debug("Logging in to Flow using tray pass")
             sg_username, sg_password = credentials.get_local_login()
 
             if not sg_username or not sg_password:
@@ -125,7 +123,6 @@ class ShotgridAddon(AYONAddon, ITrayAddon, IPluginPaths):
             })
 
         elif self._client_login_type == "tray_api_key":
-            log.debug("Logging in to Flow using tray api key")
             sg_username, _ = credentials.get_local_login()
             kwargs.update({
                 "username": sg_username,
