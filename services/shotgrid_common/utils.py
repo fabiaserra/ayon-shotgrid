@@ -1218,4 +1218,11 @@ def update_ay_entity_custom_attributes(
             except ValueError as e:
                 logging.warning(f"Assignees sync not implemented: {e}")
         else:
-            ay_entity.attribs.set(ay_attrib, attrib_value)
+            try:
+                ay_entity.attribs.set(ay_attrib, attrib_value)
+            except KeyError:
+                logging.warning(
+                    "Couldn't set attribute %s to entity %s",
+                    ay_attrib, ay_entity.name
+                )
+                continue
