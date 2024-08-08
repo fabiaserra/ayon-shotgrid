@@ -185,9 +185,10 @@ def match_shotgrid_hierarchy_in_ayon(
 
     try:
         entity_hub.commit_changes()
-    except Exception:
-        log.error(
-            "Unable to commit all entities to AYON!", exc_info=True)
+    except Exception as e:
+        msg = "Unable to commit all entities to AYON!"
+        log.error(msg, exc_info=True)
+        raise Exception(msg) from e
 
     log.info(
         "Processed entities successfully!. "
@@ -214,11 +215,7 @@ def match_shotgrid_hierarchy_in_ayon(
             attrib_value
         )
 
-    try:
-        entity_hub.commit_changes()
-    except Exception:
-        log.error(
-            "Unable to commit attribute updates!", exc_info=True)
+    entity_hub.commit_changes()
 
     # Update Shotgrid project with Ayon ID and sync status
     sg_session.update(

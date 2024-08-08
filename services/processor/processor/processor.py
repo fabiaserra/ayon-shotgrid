@@ -250,7 +250,7 @@ class ShotgridProcessor:
                             payload,
                         )
 
-                    except Exception:
+                    except Exception as e:
                         self.log.error(
                             f"Unable to process handler {handler.__name__}",
                             exc_info=True
@@ -266,6 +266,7 @@ class ShotgridProcessor:
                                 "message": traceback.format_exc(),
                             },
                         )
+                        raise e
 
                 self.log.info(
                     "Event has been processed... setting to finished!")
@@ -276,8 +277,8 @@ class ShotgridProcessor:
                     status="finished",
                 )
 
-            except Exception:
-                self.log.error(traceback.format_exc())
+            except Exception as e:
+                self.log.error(traceback.format_exc(e))
 
 
 def service_main():

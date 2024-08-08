@@ -284,7 +284,7 @@ class ShotgridListener:
                     if not event:
                         continue
 
-                    ignore_event = True
+                    ignore_event = False
                     last_event_id = event["id"]
 
                     if (
