@@ -133,7 +133,7 @@ class ShotgridProcessor:
         )
         handlers_dict = {}
 
-        for root, handlers_directories, handler_files in os.walk(handlers_dir):
+        for root, _, handler_files in os.walk(handlers_dir):
             for handler in handler_files:
                 if handler.endswith(".py") and not handler.startswith((".", "_")):
                     module_name = str(handler.replace(".py", ""))
@@ -199,7 +199,6 @@ class ShotgridProcessor:
                     "shotgrid.proc",
                     socket.gethostname(),
                     description="Enrolling to any `shotgrid.event` Event...",
-                    max_retries=2,
                     sequential=True,
                 )
 
@@ -283,6 +282,5 @@ class ShotgridProcessor:
 
 def service_main():
     ayon_api.init_service()
-
     shotgrid_processor = ShotgridProcessor()
     sys.exit(shotgrid_processor.start_processing())

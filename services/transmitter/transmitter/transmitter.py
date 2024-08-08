@@ -240,15 +240,16 @@ class ShotgridTransmitter:
             except Exception:
                 self.log.error(
                     "Error processing event", exc_info=True)
-
-                ayon_api.update_event(
-                    event["id"],
-                    project_name=project_name,
-                    status="failed",
-                    payload={
-                        "message": traceback.format_exc(),
-                    },
-                )
+                
+                if event:
+                    ayon_api.update_event(
+                        event["id"],
+                        project_name=project_name,
+                        status="failed",
+                        payload={
+                            "message": traceback.format_exc(),
+                        },
+                    )
 
 
 def service_main():

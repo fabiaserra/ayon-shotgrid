@@ -245,15 +245,9 @@ class ShotgridListener:
             sg_projects = self.sg_session.find(
                 "Project", filters=[["sg_ayon_auto_sync", "is", True]]
             )
+
             sg_filters = self._build_shotgrid_filters(sg_projects)
-
-            self.log.debug(f"Last Event ID: {last_event_id}")
-
             if not sg_filters:
-                self.log.debug(
-                    f"Leecher waiting {self.shotgrid_polling_frequency} "
-                    "seconds. No projects with AYON Auto Sync found."
-                )
                 time.sleep(self.shotgrid_polling_frequency)
                 continue
 
@@ -261,8 +255,6 @@ class ShotgridListener:
                 last_event_id = self._get_last_event_processed(sg_filters)
 
             sg_filters.append(["id", "greater_than", last_event_id])
-
-            self.log.debug(f"Shotgrid filters: {sg_filters}")
 
             try:
                 events = self.sg_session.find(
@@ -273,12 +265,11 @@ class ShotgridListener:
                     limit=50,
                 )
                 if not events:
-                    self.log.debug(
-                        f"Leecher waiting {self.shotgrid_polling_frequency} seconds..."
-                    )
                     time.sleep(self.shotgrid_polling_frequency)
                     continue
 
+                self.log.debug(f"Last Event ID: {last_event_id}")
+                self.log.debug(f"Shotgrid filters: {sg_filters}")
                 self.log.debug(f"Found {len(events)} events in Shotgrid.")
 
                 sg_projects_by_id = {
