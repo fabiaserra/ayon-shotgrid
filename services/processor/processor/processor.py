@@ -195,11 +195,11 @@ class ShotgridProcessor:
         while True:
             try:
                 event = ayon_api.enroll_event_job(
-                    "shotgrid.event",
+                    "shotgrid.event.*",
                     "shotgrid.proc",
                     socket.gethostname(),
                     description="Enrolling to any `shotgrid.event` Event...",
-                    sequential=True,
+                    max_retries=2,
                 )
 
                 if not event:
