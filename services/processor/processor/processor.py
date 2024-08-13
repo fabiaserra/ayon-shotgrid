@@ -199,6 +199,7 @@ class ShotgridProcessor:
                     "shotgrid.proc",
                     socket.gethostname(),
                     description="Enrolling to any `shotgrid.event` Event...",
+                    sequential=True,
                     max_retries=2,
                 )
 
