@@ -371,7 +371,7 @@ class ShotgridListener:
         new_event_hash = get_event_hash("shotgrid.event", payload["id"])
 
         ayon_api.dispatch_event(
-            "shotgrid.event",
+            "shotgrid.event.entity_changed",
             sender=socket.gethostname(),
             event_hash=new_event_hash,
             project_name=project_name,

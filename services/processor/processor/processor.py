@@ -229,6 +229,7 @@ class ShotgridProcessor:
                         ),
                         status="finished"
                     )
+                    time.sleep(self.sg_polling_frequency)
                     continue
 
                 for handler in self.handlers_map.get(payload["action"], []):
