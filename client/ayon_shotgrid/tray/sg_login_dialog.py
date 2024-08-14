@@ -96,18 +96,18 @@ class SgLoginDialog(QtWidgets.QDialog):
         if self.login_type == "tray_pass":
             if sg_username and sg_password:
                 credentials.save_local_login(sg_username, sg_password)
-                os.environ["AYON_SG_USERNAME"] = sg_username
+                os.environ["AYON_USERNAME"] = sg_username
             else:
                 credentials.clear_local_login()
-                os.environ["AYON_SG_USERNAME"] = ""
+                os.environ["AYON_USERNAME"] = ""
 
         elif self.login_type == "tray_api_key":
             if sg_username:
                 credentials.save_local_login(sg_username, None)
-                os.environ["AYON_SG_USERNAME"] = sg_username
+                os.environ["AYON_USERNAME"] = sg_username
             else:
                 credentials.clear_local_login()
-                os.environ["AYON_SG_USERNAME"] = ""
+                os.environ["AYON_USERNAME"] = ""
 
     def check_sg_credentials(self):
         """Check if the provided username can login via the API."""

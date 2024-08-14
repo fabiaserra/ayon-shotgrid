@@ -71,8 +71,8 @@ class ShotgridTrayWrapper:
             self.sg_username_label.setText(
                 "Username: {} (Click to change)".format(sg_username)
             )
-            os.environ["AYON_SG_USERNAME"] = sg_username
+            os.environ["AYON_USERNAME"] = sg_username
         else:
             self.sg_username_label.setText("Specify a Username...")
-            os.environ["AYON_SG_USERNAME"] = ""
+            os.environ["AYON_USERNAME"] = ""
             self.show_sg_username_dialog()
