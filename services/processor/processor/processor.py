@@ -133,7 +133,7 @@ class ShotgridProcessor:
         )
         handlers_dict = {}
 
-        for root, _, handler_files in os.walk(handlers_dir):
+        for root, handlers_directories, handler_files in os.walk(handlers_dir):
             for handler in handler_files:
                 if handler.endswith(".py") and not handler.startswith((".", "_")):
                     module_name = str(handler.replace(".py", ""))
@@ -195,12 +195,12 @@ class ShotgridProcessor:
         while True:
             try:
                 event = ayon_api.enroll_event_job(
-                    "shotgrid.event.*",
+                    "shotgrid.event*",
                     "shotgrid.proc",
                     socket.gethostname(),
                     description="Enrolling to any `shotgrid.event` Event...",
-                    sequential=True,
                     max_retries=2,
+                    sequential=True,
                 )
 
                 if not event:
