@@ -112,7 +112,7 @@ class ShotgridProcessor:
 
         except Exception as e:
             self.log.error("Unable to get Addon settings from the server.")
-            self.log.error(traceback.format_exc())
+            self.log.error(traceback.format_exc(e))
             raise e
 
         self.handlers_map = self._get_handlers()
