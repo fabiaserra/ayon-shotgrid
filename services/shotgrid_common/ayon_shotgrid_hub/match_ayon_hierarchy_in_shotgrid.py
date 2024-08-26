@@ -184,12 +184,19 @@ def match_ayon_hierarchy_in_shotgrid(
                 custom_attribs_map
             )
             if data_to_update:
-                log.info("Syncing custom attributes on entity.")
-                sg_session.update(
-                    sg_entity_type,
-                    sg_entity_id,
-                    data_to_update
-                )
+                try:
+                    log.info("Updating SG entity custom attributes '%s'...", data_to_update)
+                    sg_session.update(
+                        sg_entity_type,
+                        sg_entity_id,
+                        data_to_update
+                    )
+                except Exception as e:
+                    log.error(
+                        f"Unable to update SG entity {sg_ay_dict['name']} custom attributes: {e}",
+                        exc_info=True
+                    )
+                    ay_project_sync_status = "Failed"
 
         # entity was not synced before and need to be created
         # We only create new entities for Folders/Tasks entities

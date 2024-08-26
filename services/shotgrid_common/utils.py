@@ -1163,7 +1163,9 @@ def get_sg_custom_attributes_data(
         if attrib_value is None:
             continue
 
-        # Convert date to expected format by SG
+        # Convert date to expected format by SG field data type 'date'
+        # NOTE: this is different than the date_time data type in SG which expects
+        # the string in another format
         if "date" in ay_attrib.lower() and isinstance(attrib_value, str):
             date_obj = datetime.fromisoformat(attrib_value)
             attrib_value = date_obj.strftime("%Y-%m-%d")
