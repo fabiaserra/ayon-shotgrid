@@ -1163,10 +1163,10 @@ def get_sg_custom_attributes_data(
         if attrib_value is None:
             continue
 
-        # Quick hack to workaround AYON EntityHub not supporting passing
-        # a date as a string
+        # Convert date to expected format by SG
         if "date" in ay_attrib.lower() and isinstance(attrib_value, str):
-            attrib_value = datetime.strptime(attrib_value, "%Y%m%dT%H%M%SZ")
+            date_obj = datetime.fromisoformat(attrib_value)
+            attrib_value = date_obj.strftime("%Y-%m-%d")
             
         # try it first without `sg_` prefix since some are built-in
         exists = check_sg_attribute_exists(
