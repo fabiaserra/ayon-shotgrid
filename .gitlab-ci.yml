@@ -14,11 +14,10 @@ stages:
 deploy-flow-launcher:
   tags:
     - mnt-pipe
-  image: alpine:latest
+  image: dm.tenant-alkemyx.lga1.ingress.coreweave.cloud/coreweave/sw-thirdparty/rsync:1.0.0
   stage: deploy
   needs: []
   script:
-    - apk add rsync
     - rsync -avh --chmod=777 --chown=995:776523089 $CI_PROJECT_DIR/flow_launcher/flow_launcher.py /pipe/ayon/flow_launcher/
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
