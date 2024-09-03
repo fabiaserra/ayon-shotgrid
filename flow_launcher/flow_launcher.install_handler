@@ -1,34 +1,34 @@
-#!/bin/tcsh -f
+#!/bin/bash
 #
 #
-#    This script attempts to register the Flow Launcher as the protocol hander for
-#    links that look like flow-launcher://blah.  
+#    This script attempts to register the Flow Launcher as the protocol handler for
+#    links that look like flow-launcher://blah.
 #
 #    It should be sufficient for gnome apps like pidgin and kde apps
-#    like konqueror.  Firefox seems to pay attention to the gnome
+#    like konqueror. Firefox seems to pay attention to the gnome
 #    settings at least to the degree that it recognizes links of the
 #    form flow-launcher://blah as hot-links, but it may still ask you to
 #    select the application the first time you click on one.
 #
 #
 
-set flowlauncher = "/usr/bin/ayon run /pipe/ayon/flow_launcher/flow_launcher.py"
-set flowlauncher_staging = "/usr/bin/ayon run --use-staging /pipe/ayon/flow_launcher/flow_launcher.py"
+flowlauncher="/usr/bin/ayon run /pipe/ayon/flow_launcher/flow_launcher.py"
+flowlauncher_staging="/usr/bin/ayon run --use-staging /pipe/ayon/flow_launcher/flow_launcher.py"
 
 #
 #   Gnome: register flow-launcher protocol handler
 #
 echo "Installing flow-launcher protocol handler for Gnome."
 
-set gconfTool = "`which gconftool-2`"
+gconfTool=$(which gconftool-2)
 
-if ($status == 0) then
-    gconftool-2 --set --type=string /desktop/gnome/url-handlers/flow-launcher/command /usr/bin/ayon' run /pipe/ayon/flow_launcher/flow_launcher.py "%s"'
+if [ $? -eq 0 ]; then
+    gconftool-2 --set --type=string /desktop/gnome/url-handlers/flow-launcher/command "$flowlauncher '%s'"
     gconftool-2 --set --type=bool /desktop/gnome/url-handlers/flow-launcher/enabled true
     gconftool-2 --set --type=bool /desktop/gnome/url-handlers/flow-launcher/need-terminal false
 else
     echo "WARNING: gconftool-2 not found: skipping gnome url-handler registration."
-endif
+fi
 
 #
 #   KDE: register flow-launcher protocol handler
@@ -36,22 +36,22 @@ endif
 #
 echo "Installing flow-launcher protocol handler for KDE."
 
-set kdeProtoDir = ~/.kde/share/services
-if ( -e ~/.kde4/share/services ) then
-    set kdeProtoDir = ~/.kde4/share/services
-endif
-if (${?KDEDIR}) then
-    set kdeProtoDir = ${KDEDIR}/share/services
-endif
+kdeProtoDir="$HOME/.kde/share/services"
+if [ -e "$HOME/.kde4/share/services" ]; then
+    kdeProtoDir="$HOME/.kde4/share/services"
+fi
+if [ ! -z "$KDEDIR" ]; then
+    kdeProtoDir="$KDEDIR/share/services"
+fi
 
-if ( ! -e $kdeProtoDir) then
-    mkdir -p $kdeProtoDir
-endif
+if [ ! -e "$kdeProtoDir" ]; then
+    mkdir -p "$kdeProtoDir"
+fi
 
-if ( -e $kdeProtoDir) then
-    set kdeProtoFile = $kdeProtoDir/flow-launcher.protocol
-    rm -f $kdeProtoFile
-    cat > $kdeProtoFile << EOF
+if [ -e "$kdeProtoDir" ]; then
+    kdeProtoFile="$kdeProtoDir/flow-launcher.protocol"
+    rm -f "$kdeProtoFile"
+    cat > "$kdeProtoFile" << EOF
 [Protocol]
 exec=$flowlauncher "%u"
 protocol=flow-launcher
@@ -67,7 +67,7 @@ EOF
     echo "Successfully created ${kdeProtoFile}"
 else
     echo "WARNING: can't find or create KDE protocol directory: ${kdeProtoDir}:  skipping KDE url-handler registration."
-endif
+fi
 
 #
 #   Gnome part 2 for xdg/Chrome: register flow-launcher protocol handler
@@ -76,18 +76,18 @@ endif
 #
 echo "Installing flow-launcher protocol handler for XDG"
 
-set desktopInstall = "`which desktop-file-install`"
+desktopInstall=$(which desktop-file-install)
 
-if ($status == 0) then
-    set xdgDir = $HOME/.local/share/applications
-    if ( ! -e $xdgDir ) then
-        mkdir -p $xdgDir
-    endif
+if [ $? -eq 0 ]; then
+    xdgDir="$HOME/.local/share/applications"
+    if [ ! -e "$xdgDir" ]; then
+        mkdir -p "$xdgDir"
+    fi
 
-    if ( -e $xdgDir) then
-        set xdgFile = $xdgDir/flow-launcher.desktop
-        rm -f $xdgFile
-        cat > $xdgFile << EOF
+    if [ -e "$xdgDir" ]; then
+        xdgFile="$xdgDir/flow-launcher.desktop"
+        rm -f "$xdgFile"
+        cat > "$xdgFile" << EOF
 [Desktop Entry]
 Name=FlowLauncher
 GenericName=FlowLauncher
@@ -107,11 +107,11 @@ EOF
         echo "Successfully created ${xdgFile}"
     else
         echo "WARNING: can't find or create XDG directory: ${xdgDir}:  skipping XDG url-handler registration."
-    endif
+    fi
 
-    desktop-file-install $xdgFile --rebuild-mime-info-cache --dir=$xdgDir
+    desktop-file-install "$xdgFile" --rebuild-mime-info-cache --dir="$xdgDir"
 else
     echo "WARNING: desktop-file-install not found: skipping xdg-handler registration."
-endif
+fi
 
 echo "Done."
