@@ -22,15 +22,19 @@ This Python script is the core of the FlowLauncher functionality. It parses a cu
   3. The script queries Flow for task details.
   4. It then identifies the corresponding AYON application and launches it using the `AddonsManager`.
 
-### 2. `FlowLauncher.desktop`
+### 2. `flow_launcher.install_handler`
 
-This `.desktop` file integrates the FlowLauncher with the Linux desktop environment, allowing it to handle URLs with the custom `flow-launcher` protocol. 
+This file automates the registration of the FlowLauncher as the protocol handler for flow-launcher:// URLs across different desktop environments.
 
 - **Key Features:**
-  - Registers the `flow-launcher` protocol, so any URL starting with `flow-launcher://` will be handled by this application.
-  - Defines actions for both normal and staging environments.
-  - Specifies the AYON icon and executable paths.
-  - Includes a fallback action (`TryExec`) to ensure compatibility.
+  - Automates the installation and registration process for both GNOME and KDE desktop environments.
+  - Registers the flow-launcher protocol, ensuring any URL starting with flow-launcher:// will be handled by this application.
+  - Provides an option for a staging environment to run the script under different conditions.
+
+- **Installation Steps:**
+  - GNOME: Registers the FlowLauncher as a URL handler using gconftool-2.
+  - KDE: Creates and installs the necessary protocol file in the appropriate KDE directory.
+  - XDG/Chrome: Installs the FlowLauncher as a protocol handler using the XDG desktop file, making it available for applications like Chrome.
 
 - **Actions:**
   - **Standard Execution:** Runs the `flow_launcher.py` script when the `flow-launcher` protocol is triggered.
@@ -38,9 +42,16 @@ This `.desktop` file integrates the FlowLauncher with the Linux desktop environm
 
 ## Installation
 
-### 1. Copy the `.desktop` file
+### 1. Run the Installation Script
 
-Place the `FlowLauncher.desktop` file in the appropriate directory to register the custom protocol with your desktop environment. This is typically `~/.local/share/applications/` for user-specific configurations or `/usr/share/applications/` for system-wide configuration.
+To register the FlowLauncher as the protocol handler for your desktop environment, execute the flow_launcher.install_handler script. This script automates the entire setup process.
 
 ```bash
-cp FlowLauncher.desktop ~/.local/share/applications/
+./flow_launcher.install_handler
+```
+
+The script will handle the registration process for GNOME, KDE, and XDG environments, ensuring that FlowLauncher is properly integrated into your system.
+
+## Coreweave integration
+
+The file is currently being ran automatically when Coreweave boots up through the AYON Ansible role at https://gitlab.alkemy-x.com/coreweave/infrastructure/virtual-servers/virtserver-ansible/-/tree/master/roles/ayon?ref_type=heads
