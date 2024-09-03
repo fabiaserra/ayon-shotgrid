@@ -1,6 +1,6 @@
 annotated-types==0.6.0
 appdirs==1.4.4
-ayon-python-api>=1.0.8
+git+https://gitlab.alkemy-x.com/coreweave/pipeline/ayon/ayon-python-api.git@release/alkemyx#egg=ayon_api
 certifi==2024.2.2
 charset-normalizer==3.3.2
 colorama==0.4.6

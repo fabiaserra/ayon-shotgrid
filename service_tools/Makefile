@@ -33,8 +33,8 @@ help:
 	@echo "$$HELP_INFO"
 
 createenv:
-		$(shell [[ -d $(CURDIR)/venv ]] || python -m venv $(CURDIR)/venv) && \
-		. $(CURDIR)/venv/bin/activate && python -m pip install -r "$(CURDIR)/requirements.txt"
+		bash -c '[[ -d $(CURDIR)/venv ]] || python -m venv $(CURDIR)/venv && \
+		source $(CURDIR)/venv/bin/activate && python -m pip install -r "$(CURDIR)/requirements.txt"'
 
 leecher:
 		export AYON_ADDON_NAME="shotgrid" && \
@@ -55,10 +55,10 @@ transmitter:
 		python "$(CURDIR)/main.py" --service transmitter $@
 
 services:
-		export AYON_ADDON_NAME="shotgrid" && \
+		bash -c 'export AYON_ADDON_NAME="shotgrid" && \
 		export AYON_ADDON_VERSION=$(VERSION) && \
-		. $(CURDIR)/venv/bin/activate && \
-		python "$(CURDIR)/main.py" --service all $@
+		source $(CURDIR)/venv/bin/activate && \
+		python "$(CURDIR)/main.py" --service all'
 
 info: help
 default: help
