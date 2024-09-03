@@ -11,6 +11,21 @@ stages:
   - build
   - deploy
 
+deploy-flow-launcher:
+  tags:
+    - mnt-pipe
+  image: alpine:latest
+  stage: deploy
+  needs: []
+  script:
+    - apk add rsync
+    - rsync -avh --chmod=777 --chown=995:776523089 $CI_PROJECT_DIR/flow_launcher/flow_launcher.py /pipe/ayon/flow_launcher/
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      changes:
+        - flow_launcher/*
+    - when: manual
+
 .git-setup:
   before_script:
     - apk add --no-cache git
