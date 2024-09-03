@@ -56,7 +56,8 @@ def main(args):
         sys.exit("Project name is missing in the URL parameters.")
 
     # Iterate over the selected task IDs
-    for sg_id in params.get("ids", []):
+    task_ids = params.get("ids", [""])[0].split(",")
+    for sg_id in task_ids:
         sg_task = sg.find_one(
             "Task",
             [["id", "is", int(sg_id)]],
