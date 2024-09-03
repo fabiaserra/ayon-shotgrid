@@ -18,7 +18,7 @@ deploy-flow-launcher:
   stage: deploy
   needs: []
   script:
-    - rsync -avh --chmod=777 --chown=995:776523089 $CI_PROJECT_DIR/flow_launcher/flow_launcher.py /pipe/ayon/flow_launcher/
+    - rsync -avh --chmod=777 --chown=995:776523089 $CI_PROJECT_DIR/flow_launcher/* /pipe/ayon/flow_launcher/
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
       changes:
