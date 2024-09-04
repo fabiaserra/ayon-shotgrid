@@ -10,12 +10,6 @@
 #    form flow-launcher://blah as hot-links, but it may still ask you to
 #    select the application the first time you click on one.
 #
-#
-
-flowlauncher="/usr/bin/ayon run /pipe/ayon/flow_launcher/flow_launcher.py"
-flowlauncher_staging="/usr/bin/ayon run --use-staging /pipe/ayon/flow_launcher/flow_launcher.py"
-
-#
 #   Gnome: register flow-launcher protocol handler
 #
 echo "Installing flow-launcher protocol handler for Gnome."
@@ -23,7 +17,7 @@ echo "Installing flow-launcher protocol handler for Gnome."
 gconfTool=$(which gconftool-2)
 
 if [ $? -eq 0 ]; then
-    gconftool-2 --set --type=string /desktop/gnome/url-handlers/flow-launcher/command "$flowlauncher '%s'"
+    gconftool-2 --set --type=string /desktop/gnome/url-handlers/flow-launcher/command "gnome-terminal -- bash -c \"mkdir -p /ax_logs/$(hostname)/ayon && /usr/bin/ayon run /pipe/ayon/flow_launcher/flow_launcher.py %U | tee /ax_logs/$(hostname)/ayon/console_$(date +\"%Y%m%d_%H%M%S\").log; echo 'Process finished with exit code $?'; echo 'Press any key to close...'; read -n 1; exec bash\""
     gconftool-2 --set --type=bool /desktop/gnome/url-handlers/flow-launcher/enabled true
     gconftool-2 --set --type=bool /desktop/gnome/url-handlers/flow-launcher/need-terminal false
 else
@@ -53,7 +47,7 @@ if [ -e "$kdeProtoDir" ]; then
     rm -f "$kdeProtoFile"
     cat > "$kdeProtoFile" << EOF
 [Protocol]
-exec=$flowlauncher "%u"
+exec=gnome-terminal -- bash -c "mkdir -p /ax_logs/$(hostname)/ayon && /usr/bin/ayon run /pipe/ayon/flow_launcher/flow_launcher.py %U | tee /ax_logs/$(hostname)/ayon/console_$(date +\"%Y%m%d_%H%M%S\").log; echo 'Process finished with exit code $?'; echo 'Press any key to close...'; read -n 1; exec bash"
 protocol=flow-launcher
 input=none
 output=none
@@ -92,7 +86,7 @@ if [ $? -eq 0 ]; then
 Name=FlowLauncher
 GenericName=FlowLauncher
 Comment=Launch AYON launcher applications from Flow
-Exec=$flowlauncher %U
+Exec=gnome-terminal -- bash -c "mkdir -p /ax_logs/$(hostname)/ayon && /usr/bin/ayon run /pipe/ayon/flow_launcher/flow_launcher.py %U | tee /ax_logs/$(hostname)/ayon/console_$(date +\"%Y%m%d_%H%M%S\").log; echo 'Process finished with exit code $?'; echo 'Press any key to close...'; read -n 1; exec bash"
 NoDisplay=true
 Terminal=false
 Type=Application
@@ -102,7 +96,7 @@ Actions=Staging;
 
 [Desktop Action Staging]
 Name=FlowLauncher (staging)
-Exec=$flowlauncher_staging %u
+Exec=gnome-terminal -- bash -c "mkdir -p /ax_logs/$(hostname)/ayon && /usr/bin/ayon run /pipe/ayon/flow_launcher/flow_launcher.py %U | tee /ax_logs/$(hostname)/ayon/console_$(date +\"%Y%m%d_%H%M%S\").log; echo 'Process finished with exit code $?'; echo 'Press any key to close...'; read -n 1; exec bash"
 EOF
         echo "Successfully created ${xdgFile}"
     else
