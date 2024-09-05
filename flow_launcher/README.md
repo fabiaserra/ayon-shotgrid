@@ -62,7 +62,12 @@ To register FlowLauncher as the protocol handler for your desktop environment, e
 ```bash
 ./flow_launcher.install_handler
 ```
+#### Alkemy-X integration
 
-## Coreweave integration
+The file is currently being ran automatically when our machines boot up through the AYON Ansible role at https://gitlab.alkemy-x.com/coreweave/infrastructure/virtual-servers/virtserver-ansible/-/tree/master/roles/ayon?ref_type=heads
 
-The file is currently being ran automatically when Coreweave boots up through the AYON Ansible role at https://gitlab.alkemy-x.com/coreweave/infrastructure/virtual-servers/virtserver-ansible/-/tree/master/roles/ayon?ref_type=heads
+### 2. Add the AMI in Flow
+
+In order to expose the launch actions in Flow we go to the Action Menu Items configuration and we add an entry for each DCC we want to launch, like so:
+
+![Action Menu Items](menu_items_flow.png)
