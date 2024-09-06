@@ -280,7 +280,7 @@ class ShotgridProcessor:
                 )
 
             except Exception as e:
-                self.log.error(traceback.format_exc(e))
+                self.log.error(traceback.format_exc())
 
 
 def service_main():
