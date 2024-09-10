@@ -9,6 +9,11 @@ from ayon_shotgrid.lib import credentials
 logger = Logger.get_logger(__name__)
 
 
+class ProjectNotFound(Exception):
+    """Exception raised when project not found in Flow."""
+    pass
+
+
 def create_project(project_code):
     """Create a new project, set up its folders and populate it with the SG info."""
 
@@ -22,8 +27,9 @@ def create_project(project_code):
         ["name", "id"],
     )
     if not sg_project:
-        logger.error("Project with 'sg_code' '%s' not found.", project_code)
-        return
+        msg = f"Project with 'sg_code':'{project_code}' not found."
+        logger.error(msg)
+        raise ProjectNotFound(msg)
 
     project_name = sg_project["name"]
 
