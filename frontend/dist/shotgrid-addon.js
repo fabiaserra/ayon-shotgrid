@@ -31,7 +31,7 @@ const init = () => {
     addonScope = e.data.scope
 
     ayonAPI = axios.create({
-      baseUrl: `${e.origin}/api/`,
+      baseUrl: `${e.origin}`,
       headers: {"Authorization": `Bearer ${accessToken}`}
     })
 
