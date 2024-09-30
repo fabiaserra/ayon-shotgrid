@@ -267,26 +267,30 @@ const getShotgridUsers = async () => {
 
 const getAyonUsers = async () => {
   /* Query AYON for all existing users. */
-  const response = await ayonAPI.post('graphql', {
-    query: `
-      query ActiveUsers {
-        users {
-          edges {
-            node {
-              attrib {
-                email
-                fullName
+  ayonUsers = await axios({
+    url: '/graphql',
+    headers: {"Authorization": `Bearer ${accessToken}`},
+    method: 'post',
+    data: {
+      query: `
+        query ActiveUsers {
+          users {
+            edges {
+              node {
+                attrib {
+                  email
+                  fullName
+                }
+                active
+                name
+                accessGroups
               }
-              active
-              name
-              accessGroups
             }
           }
         }
-      }
-      `
-  });
-  const ayonUsers = response.data.data.users.edges;
+        `
+    }
+  }).then((result) => result.data.data.users.edges);
 
   let ayonUsersConformed = []
   if (ayonUsers) {
@@ -421,25 +425,29 @@ const getShotgridProjects = async () => {
 
 const getAyonProjects = async () => {
   /* Query AYON for all existing projects. */
-  const response = await ayonAPI.post('graphql', {
-    query: `
-      query ActiveProjects {
-        projects {
-          edges {
-            node {
-              attrib {
-                shotgridId
+  ayonProjects = await axios({
+    url: '/graphql',
+    headers: {"Authorization": `Bearer ${accessToken}`},
+    method: 'post',
+    data: {
+      query: `
+        query ActiveProjects {
+          projects {
+            edges {
+              node {
+                attrib {
+                  shotgridId
+                }
+                active
+                code
+                name
               }
-              active
-              code
-              name
             }
           }
         }
-      }
-    `,
-  });
-  const ayonProjects = response.data.data.projects.edges;
+      `
+    }
+  }).then((result) => result.data.data.projects.edges);
 
   let ayonProjectsConformed = []
   if (ayonProjects) {
@@ -452,7 +460,8 @@ const getAyonProjects = async () => {
       })
     })
   }
-    return ayonProjectsConformed
+  
+  return ayonProjectsConformed
 }
 
 
