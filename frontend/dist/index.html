@@ -9,7 +9,7 @@
 
   <body>
     <h1>ShotGrid Sync</h1>
-    <button id="sync-users-button"  class="sync-users-button" onclick="syncUsers();">Sync Users</button>
+    <button id="sync-users-button"  class="sync-users-button" onclick="syncUsers();">Sync Users from Shotgrid to AYON</button>
     <p>
         From this page you can Import projects from ShotGrid or trigger a project Sync!<br>
         In order for the Synchronization to work, a <b><code>ShotgridProcessor</code> <a target="_parent" href="/services">service</a> must be running</b>, this page will only create <a target="_parent" href="/events"> events (with the topic: "shotgrid.event.project.sync") </a> for the processor to handle.
@@ -20,7 +20,7 @@
             <li> The Project has to have a code, has to be lowercase and cannot start with a number. (You can choose what the field code is in the Addon Settings), </li>
         </ul>
     <p>If the above criteria isn't met, the Synchronization button will be greyed out.</p>
-    <p>But first we need to fetch data from ShotGrid, press the button below:</p>
+    <p>Press the button below to update the table if it's outdated:</p>
     <button id="populate-table-button"  class="populate-table-button" onclick="populateTable();">Populate Table</button>
 
     <p id="call-result"> </p>

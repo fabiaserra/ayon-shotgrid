@@ -164,14 +164,13 @@ const syncUsers = async () => {
   console.log("Syncing Shotgrid users to Ayon");
   const ayonUsers = await getAyonUsers();
   const sgUsers = await getShotgridUsers();
-
   const ayonUserNames = new Set(ayonUsers.map(user => user.name));
-  const promises = [];
-
+  
+  let promises = [];
   sgUsers.forEach((sg_user) => {
     const already_exists = ayonUserNames.has(sg_user.login);
-
     if (!already_exists) {
+      console.log("Trying to create user: " + sg_user.login);
       promises.push(
         createNewUserInAyon(sg_user.login, sg_user.email, sg_user.name).catch(error => {
           console.error(`Failed to create user ${sg_user.login}:`, error);
@@ -179,13 +178,15 @@ const syncUsers = async () => {
       );
     }
   
-    console.log("Trying to sync user " + sg_user.login);
-    const accessGroups = {};
-
+    console.log("Syncing access groups for user: " + sg_user.login);
+    let accessGroups = [];
     ayonProjects.forEach((ayon_project) => {
       sg_user.projectNames.forEach((project_name) => {
         if (ayon_project.name === project_name) {
-          accessGroups[project_name] = [sg_user.permissionGroup];
+          accessGroups.push({
+              "project": project_name,
+              "accessGroups": [sg_user.permissionGroup,]
+          });
         }
       });
     });
@@ -334,37 +335,37 @@ const assignUserToProjects = async (login, accessGroups, permissionGroup) => {
   /* Set AYON project access permissions to user */
   call_result_paragraph = document.getElementById("call-result");
   
-  /* For admin, executive and management Shotgrid roles we simply set the access group on the user
-  as those have access to all projects by default */
-  if (["admin", "executive", "management"].includes(permissionGroup)) {
-    var access_data = {
-      isAdmin: permissionGroup === "admin",
-      isManager: ["executive", "management"].includes(permissionGroup),
-      isDeveloper: permissionGroup === "admin",
-    };
-    response = await ayonAPI
-      .patch("/api/users/" + login, {
-        "data": access_data
-      })
-      .then((result) => result)
-      .catch((error) => {
-        console.log("Unable to assign access groups to user!")
-        console.log(error)
-        call_result_paragraph.innerHTML = `Unable to assign role to user!! ${error}`
-      });
-  }
-  /* Otherwise we set the access group for each project the user is assigned to */
-  else {
+  /* Set the access level of the user */
+  var access_data = {
+    isAdmin: permissionGroup === "admin",
+    isManager: ["executive", "management"].includes(permissionGroup),
+    isDeveloper: permissionGroup === "admin",
+  };
+  response = await ayonAPI
+    .patch("/api/users/" + login, {
+      "data": access_data,
+      "active": true
+    })
+    .then((result) => result)
+    .catch((error) => {
+      console.log("Unable to set access level to user!")
+      console.log(error)
+      call_result_paragraph.innerHTML = `Unable to set access level to user: ${error}`
+    });
+
+  // For all users that don't have a manager/admin role we set the access group based
+  // on project
+  if (!["admin", "executive", "management"].includes(permissionGroup)) {
     response = await ayonAPI
       .patch("/api/users/" + login + "/accessGroups", {
-        accessGroups
+        "accessGroups": accessGroups,
       })
       .then((result) => result)
       .catch((error) => {
         console.log("Unable to assign access groups to user!")
         console.log(error)
         call_result_paragraph.innerHTML = `Unable to assign access groups to user!! ${error}`
-      });
+    });
   }
 }
 
