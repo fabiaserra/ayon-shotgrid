@@ -1,11 +1,22 @@
-var addonName = null
-var addonVersion = null
-var accessToken = null
-var projectName = null
-var addonScope = null
-var addonSettings = null
-var sgAccessToken = null
-var ayonAPI = null
+let addonName = null
+let addonVersion = null
+let accessToken = null
+let projectName = null
+let addonScope = null
+let addonSettings = null
+let sgAccessToken = null
+let ayonAPI = null
+let ayonProjects = []; // Declare ayonProjects globally
+
+
+function slugify(inputString) {
+  return inputString
+      .trim()                         // Remove leading and trailing whitespaces
+      .replace(/^\W+/, '')            // Remove non-alphanumeric characters from the beginning
+      .replace(/\s+/g, '')            // Remove all whitespaces
+      .replace(/[-/]/g, '_');         // Replace all hyphens and '/' with '_'
+}
+
 
 const init = () => {
  /* When the addon page is loaded, it receive a message with context and
@@ -33,16 +44,30 @@ const init = () => {
       .then((result) => result.data);
 
     addonSettings.shotgrid_api_key = addonSecrets.value
+
+    ayonProjects = await getAyonProjects();
+
+    await populateTable();
   } // end of window.onmessage
 } // end of init
+
 
 const populateTable = async () => {
   /* Get all the projects from AYON and Shotgrid, then populate the table with their info
   and a button to Synchronize if they pass the requirements */
-  ayonProjects = await getAyonProjects();
   sgProjects = await getShotgridProjects();
 
-  var allProjects = ayonProjects
+  // Wait until ayonProjects is populated
+  if (ayonProjects.length === 0) {
+    console.log("Waiting for ayonProjects to be populated...");
+    await new Promise((resolve) => setTimeout(resolve, 1000)); // Wait for 1 second
+    if (ayonProjects.length === 0) {
+      alert("AYON Projects are not yet loaded. Please try again later.");
+      return;
+    }
+  }
+
+  const allProjects = [...ayonProjects]; // Clone to avoid modifying the global array
 
   sgProjects.forEach((sg_project) => {
     let already_exists = false
@@ -125,21 +150,59 @@ const populateTable = async () => {
 const syncUsers = async () => {
   /* Get all the Users from AYON and Shotgrid, then populate the table with their info
   and a button to Synchronize if they pass the requirements */
-  ayonUsers = await getAyonUsers();
-  sgUsers = await getShotgridUsers();
+
+  // Wait until ayonProjects is populated
+  if (ayonProjects.length === 0) {
+    console.log("Waiting for ayonProjects to be populated...");
+    await new Promise((resolve) => setTimeout(resolve, 1000)); // Wait for 1 second
+    if (ayonProjects.length === 0) {
+      alert("AYON Projects are not yet loaded. Please try again later.");
+      return;
+    }
+  }
+
+  console.log("Syncing Shotgrid users to Ayon");
+  const ayonUsers = await getAyonUsers();
+  const sgUsers = await getShotgridUsers();
+
+  const ayonUserNames = new Set(ayonUsers.map(user => user.name));
+  const promises = [];
 
   sgUsers.forEach((sg_user) => {
-    let already_exists = false
-    ayonUsers.forEach((user) => {
-      if (sg_user.login == user.name) {
-          already_exists = true
-      }
-    })
+    const already_exists = ayonUserNames.has(sg_user.login);
+
     if (!already_exists) {
-      createNewUserInAyon(sg_user.login, sg_user.email, sg_user.name)
+      promises.push(
+        createNewUserInAyon(sg_user.login, sg_user.email, sg_user.name).catch(error => {
+          console.error(`Failed to create user ${sg_user.login}:`, error);
+        })
+      );
     }
-  })
-}
+  
+    console.log("Trying to sync user " + sg_user.login);
+    const accessGroups = {};
+
+    ayonProjects.forEach((ayon_project) => {
+      sg_user.projectNames.forEach((project_name) => {
+        if (ayon_project.name === project_name) {
+          accessGroups[project_name] = [sg_user.permissionGroup];
+        }
+      });
+    });
+
+    // Collect promises for assigning users to projects
+    promises.push(
+      assignUserToProjects(sg_user.login, accessGroups, sg_user.permissionGroup).catch(error => {
+        console.error(`Failed to assign user ${sg_user.login} to projects:`, error);
+      })
+    );
+
+  });
+
+  // Wait for all promises to resolve
+  await Promise.all(promises);
+};
+
 
 
 const getShotgridUsers = async () => {
@@ -163,7 +226,7 @@ const getShotgridUsers = async () => {
     });
 
     sgUsers = await axios
-      .get(`${sgBaseUrl}/entity/human_users?filter[sg_status_list]=act&fields=login,name,email`, {
+      .get(`${sgBaseUrl}/entity/human_users?filter[sg_status_list]=act&fields=login,name,email,projects,permission_rule_set`, {
         headers: {
             'Authorization': `Bearer ${sgAuthToken}`,
             'Accept': 'application/json'
@@ -174,7 +237,7 @@ const getShotgridUsers = async () => {
         console.log("Unable to Fetch Shotgrid Users!")
         console.log(error)
       });
-
+    
     /* Do some extra clean up on the users returned. */
     var sgUsersConformed = []
     users_to_ignore = ["dummy", "root", "support"]
@@ -183,10 +246,17 @@ const getShotgridUsers = async () => {
         if (
           !users_to_ignore.some(item => sg_user.attributes.email.includes(item))
         ) {
+          /* Need to slugify the Shotgrid project name as AYON doesn't support the same
+          characters and so if it's been synced in the past it was slugified already*/
+          var projectNames = sg_user.relationships.projects.data.map(
+            project => slugify(project["name"])
+          );
           sgUsersConformed.push({
             "login": sg_user.attributes.login,
             "name": sg_user.attributes.name,
             "email": sg_user.attributes.email,
+            "projectNames": projectNames,
+            "permissionGroup": sg_user.relationships.permission_rule_set.data.name.toLowerCase(), 
           })
         }
       });
@@ -197,48 +267,45 @@ const getShotgridUsers = async () => {
 
 const getAyonUsers = async () => {
   /* Query AYON for all existing users. */
-  ayonUsers = await axios({
-    url: '/graphql',
-    headers: {"Authorization": `Bearer ${accessToken}`},
-    method: 'post',
-    data: {
-      query: `
-        query ActiveUsers {
-          users {
-            edges {
-              node {
-                attrib {
-                  email
-                  fullName
-                }
-                active
-                name
+  const response = await ayonAPI.post('graphql', {
+    query: `
+      query ActiveUsers {
+        users {
+          edges {
+            node {
+              attrib {
+                email
+                fullName
               }
+              active
+              name
+              accessGroups
             }
           }
         }
-        `
-    }
-  }).then((result) => result.data.data.users.edges);
+      }
+      `
+  });
+  const ayonUsers = response.data.data.users.edges;
 
-  var ayonUsersConformed = []
-
+  let ayonUsersConformed = []
   if (ayonUsers) {
     ayonUsers.forEach((user) => {
       ayonUsersConformed.push({
         "name": user.node.name,
         "email": user.node.attrib.email,
         "fullName": user.node.attrib.fullName,
+        "accessGroups": user.node.accessGroups,
       })
     })
   }
-    return ayonUsersConformed
+  
+  return ayonUsersConformed
 }
 
 
 const createNewUserInAyon = async (login, email, name) => {
-  /* Spawn an AYON Event of topic "shotgrid.event.project.sync" to synchcronize a project
-  from Shotgrid into AYON. */
+  /* Create a new AYON user. */
   call_result_paragraph = document.getElementById("call-result");
 
   response = await ayonAPI
@@ -256,6 +323,45 @@ const createNewUserInAyon = async (login, email, name) => {
       console.log(error)
       call_result_paragraph.innerHTML = `Unable to create user in AYON! ${error}`
     });
+}
+
+
+const assignUserToProjects = async (login, accessGroups, permissionGroup) => {
+  /* Set AYON project access permissions to user */
+  call_result_paragraph = document.getElementById("call-result");
+  
+  /* For admin, executive and management Shotgrid roles we simply set the access group on the user
+  as those have access to all projects by default */
+  if (["admin", "executive", "management"].includes(permissionGroup)) {
+    var access_data = {
+      isAdmin: permissionGroup === "admin",
+      isManager: ["executive", "management"].includes(permissionGroup),
+      isDeveloper: permissionGroup === "admin",
+    };
+    response = await ayonAPI
+      .patch("/api/users/" + login, {
+        "data": access_data
+      })
+      .then((result) => result)
+      .catch((error) => {
+        console.log("Unable to assign access groups to user!")
+        console.log(error)
+        call_result_paragraph.innerHTML = `Unable to assign role to user!! ${error}`
+      });
+  }
+  /* Otherwise we set the access group for each project the user is assigned to */
+  else {
+    response = await ayonAPI
+      .patch("/api/users/" + login + "/accessGroups", {
+        accessGroups
+      })
+      .then((result) => result)
+      .catch((error) => {
+        console.log("Unable to assign access groups to user!")
+        console.log(error)
+        call_result_paragraph.innerHTML = `Unable to assign access groups to user!! ${error}`
+      });
+  }
 }
 
 
@@ -294,15 +400,7 @@ const getShotgridProjects = async () => {
 
   var sgProjectsConformed = []
 
-  if (sgProjects) {
-    function slugify(inputString) {
-        return inputString
-            .trim()                         // Remove leading and trailing whitespaces
-            .replace(/^\W+/, '')            // Remove non-alphanumeric characters from the beginning
-            .replace(/\s+/g, '')            // Remove all whitespaces
-            .replace(/[-/]/g, '_');         // Replace all hyphens and '/' with '_'
-    }
-    
+  if (sgProjects) {    
     sgProjects.forEach((project) => {
       /* Only add projects that have a code name as those are the requirements to sync to Ayon. */
       if (
@@ -320,34 +418,30 @@ const getShotgridProjects = async () => {
   return sgProjectsConformed;
 }
 
+
 const getAyonProjects = async () => {
   /* Query AYON for all existing projects. */
-  ayonProjects = await axios({
-    url: '/graphql',
-    headers: {"Authorization": `Bearer ${accessToken}`},
-    method: 'post',
-    data: {
-      query: `
-        query ActiveProjects {
-          projects {
-            edges {
-              node {
-                attrib {
-                  shotgridId
-                }
-                active
-                code
-                name
+  const response = await ayonAPI.post('graphql', {
+    query: `
+      query ActiveProjects {
+        projects {
+          edges {
+            node {
+              attrib {
+                shotgridId
               }
+              active
+              code
+              name
             }
           }
         }
-        `
-    }
-  }).then((result) => result.data.data.projects.edges);
+      }
+    `,
+  });
+  const ayonProjects = response.data.data.projects.edges;
 
-  var ayonProjectsConformed = []
-
+  let ayonProjectsConformed = []
   if (ayonProjects) {
     ayonProjects.forEach((project) => {
       ayonProjectsConformed.push({
@@ -392,6 +486,7 @@ const syncShotgridToAyon = async (projectName, projectCode) => {
     call_result_paragraph.innerHTML = `Successfully Spawned Event! ${dispatch_event.data.id} Make sure there's a processor <a target="_parent" href="/services">Service running</a>`
   }
 }
+
 
 const syncAyonToShotgrid = async (projectName, projectCode) => {
   /* Spawn an AYON Event of topic "shotgrid.event.project.sync"
