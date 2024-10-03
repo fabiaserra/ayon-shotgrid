@@ -118,13 +118,11 @@ def _sg_to_ay_dict(
     if sg_entity["type"] == "Task":
         ay_entity_type = "task"
         if not sg_entity["step"]:
-            raise ValueError(
-                f"Task {sg_entity} has no Pipeline Step assigned."
-            )
+            task_type = sg_entity["content"]
+        else:
+            task_type = sg_entity["step"]["name"]
 
         label = sg_entity["content"]
-        task_type = sg_entity["step"]["name"]
-
         if not label and not task_type:
             raise ValueError(f"Unable to parse Task {sg_entity}")
         if label:
@@ -1198,13 +1196,12 @@ def update_ay_entity_custom_attributes(
     for ay_attrib, _ in custom_attribs_map.items():
         if values_to_update and ay_attrib not in values_to_update:
             continue
-
+        
         attrib_value = sg_ay_dict["attribs"].get(ay_attrib) or sg_ay_dict.get(ay_attrib)
         if attrib_value is None:
             continue
         
-        logging.debug("Updating '%s' attribute with '%s", ay_attrib, attrib_value)
-
+        log.debug("Updating '%s' attribute with '%s'", ay_attrib, attrib_value)
         if ay_attrib == "tags":
             ay_entity.tags = [tag["name"] for tag in attrib_value]
         elif ay_attrib == "status":
@@ -1218,17 +1215,17 @@ def update_ay_entity_custom_attributes(
             try:
                 ay_entity.status = new_status_name
             except ValueError as e:
-                logging.warning(f"Status sync not implemented: {e}")
+                log.warning(f"Status sync not implemented: {e}")
         elif ay_attrib == "assignees":
             try:
                 ay_entity.assignees = attrib_value
             except ValueError as e:
-                logging.warning(f"Assignees sync not implemented: {e}")
+                log.warning(f"Assignees sync not implemented: {e}")
         else:
             try:
                 ay_entity.attribs.set(ay_attrib, attrib_value)
             except KeyError:
-                logging.warning(
+                log.warning(
                     "Couldn't set attribute %s to entity %s",
                     ay_attrib, ay_entity.name
                 )

@@ -101,6 +101,14 @@ class ShotgridListener:
 
             self.sg_enabled_entities = self.settings["compatibility_settings"]["shotgrid_enabled_entities"]  # noqa: E501
 
+            ### Starts Alkemy-X Override ###
+            # Enable ProjectUserConnection entity types so we also listen
+            # the events when a user gets assigned to a project and process them
+            # on the processor to create the user if it doesn't exist and change
+            # its access group so it has access to the AYON project
+            self.sg_enabled_entities.append("ProjectUserConnection")
+            ### Ends Alkemy-X Override ###
+
             try:
                 self.shotgrid_polling_frequency = int(
                     service_settings["polling_frequency"]

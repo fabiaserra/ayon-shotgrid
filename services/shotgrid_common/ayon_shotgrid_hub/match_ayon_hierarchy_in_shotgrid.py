@@ -219,6 +219,9 @@ def match_ayon_hierarchy_in_shotgrid(
                 project_code_field,
                 custom_attribs_map,
             )
+            if not sg_ay_dict:
+                log.error(f"Unable to create entity in SG from AYON entity: {ay_entity}")
+                continue
             sg_entity_id = sg_ay_dict["attribs"][SHOTGRID_ID_ATTRIB]
             sg_ay_dicts[sg_entity_id] = sg_ay_dict
             sg_ay_dicts_parents[sg_parent_entity["id"]].add(sg_entity_id)
@@ -334,10 +337,11 @@ def _create_new_entity(
             filters=step_query_filters,
         )
         if not task_step:
-            raise ValueError(
+            log.error(
                 f"Unable to create Task {ay_entity.task_type} {ay_entity}\n"
                 f"-> Shotgrid is missing Pipeline Step {ay_entity.task_type}"
             )
+            return
 
         sg_type = "Task"
         data = {
@@ -410,8 +414,8 @@ def _create_new_entity(
         sg_entity = sg_session.create(sg_type, data)
     except Exception as e:
         log.error(
-            f"Unable to create SG entity {sg_type} with data: {data}")
-        raise e
+            f"Unable to create SG entity {sg_type} with data: {data} -> {e}")
+        return None
 
     return get_sg_entity_as_ay_dict(
         sg_session,

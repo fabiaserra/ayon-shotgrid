@@ -20,7 +20,8 @@ from .match_ayon_hierarchy_in_shotgrid import match_ayon_hierarchy_in_shotgrid
 from .update_from_shotgrid import (
     create_ay_entity_from_sg_event,
     update_ayon_entity_from_sg_event,
-    remove_ayon_entity_from_sg_event
+    remove_ayon_entity_from_sg_event,
+    sync_user
 )
 from .update_from_ayon import (
     create_sg_entity_from_ayon_event,
@@ -312,20 +313,36 @@ class AyonShotgridHub:
 
         match sg_event_meta["type"]:
             case "new_entity" | "entity_revival":
-                self.log.info(
-                    f"Creating entity from SG event: {sg_event_meta['type']}"
-                    f"| {sg_event_meta['entity_type']} "
-                    f"| {sg_event_meta['entity_id']}"
-                )
-                create_ay_entity_from_sg_event(
-                    sg_event_meta,
-                    self._sg_project,
-                    self._sg,
-                    self._ay_project,
-                    self.sg_enabled_entities,
-                    self.sg_project_code_field,
-                    self.custom_attribs_map,
-                )
+                if sg_event_meta["entity_type"] == "ProjectUserConnection":
+                    self.log.info(
+                        f"Updating user assignment: {sg_event_meta['type']}"
+                        f"| {sg_event_meta['entity_type']} "
+                        f"| {sg_event_meta['entity_id']}"
+                    )
+                    proj_user_connection = self._sg.find_one(
+                        sg_event_meta['entity_type'],
+                        [["id", "is", sg_event_meta['entity_id']]],
+                        ["user"]
+                    )
+                    sync_user(
+                        proj_user_connection["user"]["id"],
+                        self._sg,
+                    )
+                else:
+                    self.log.info(
+                        f"Creating entity from SG event: {sg_event_meta['type']}"
+                        f"| {sg_event_meta['entity_type']} "
+                        f"| {sg_event_meta['entity_id']}"
+                    )
+                    create_ay_entity_from_sg_event(
+                        sg_event_meta,
+                        self._sg_project,
+                        self._sg,
+                        self._ay_project,
+                        self.sg_enabled_entities,
+                        self.sg_project_code_field,
+                        self.custom_attribs_map,
+                    )
 
             case "attribute_change":
                 self.log.info(

@@ -462,3 +462,105 @@ def remove_ayon_entity_from_sg_event(
         ay_entity.attribs.set(SHOTGRID_ID_ATTRIB, SHOTGRID_REMOVED_VALUE)
 
     ayon_entity_hub.commit_changes()
+
+
+def sync_user(
+    sg_user_id: int,
+    sg_session: shotgun_api3.Shotgun
+):
+    """
+    Synchronize a ShotGrid user with the AYON system, including their permissions and project access.
+
+    Args:
+        sg_user_id (int): The ShotGrid user ID to be synced.
+        sg_session (shotgun_api3.Shotgun): The authenticated ShotGrid session.
+
+    Logs:
+        Logs success and failure of various synchronization steps.
+
+    Steps:
+        1. Fetch the user data from ShotGrid.
+        2. Check if the user exists in AYON. If not, create a new user.
+        3. Synchronize user permissions (admin, manager, developer).
+        4. If the user is not an admin, manager, or executive, synchronize their project-specific access.
+    
+    Returns:
+        None. Logs errors and early exits if user is not found or API calls fail.
+    """
+    
+    # Fetch user data from ShotGrid
+    sg_user = sg_session.find_one(
+        "HumanUser",
+        [["id", "is", sg_user_id]],
+        ["login", "name", "email", "projects", "permission_rule_set"],
+    )
+    if not sg_user:
+        log.error(f"Unable to find user with id '{sg_user_id}' in ShotGrid.")
+        return
+    
+    login = sg_user["login"]
+    server_api = ayon_api.GlobalServerAPI()
+
+    # Check if the user already exists in AYON
+    ayon_user = ayon_api.get_user(username=login)
+    if not ayon_user:
+        create_new_user_in_ayon(server_api, login, sg_user["email"], sg_user["name"])
+
+    # Log permission group syncing process
+    log.info(f"Syncing permission group role for user: {login}")
+    permission_group = sg_user["permission_rule_set"]["name"].lower()
+
+    # Map permission group to access data
+    access_data = {
+        "isAdmin": permission_group == "admin",
+        "isManager": permission_group in ["executive", "management"],
+        "isDeveloper": permission_group == "admin",
+    }
+
+    # Update user's access data in AYON
+    response = server_api.patch(f"users/{login}", data=access_data, active=True)
+    if response.status_code != 204:
+        log.error(f"Unable to set access level for user {login}: {response.text}")
+        return
+
+    # If the user is not in the admin, executive, or management roles,
+    # sync project-specific access groups
+    if permission_group not in ["admin", "executive", "management"]:
+        log.info(f"Syncing project access groups for user: {login}")
+        
+        # Get existing AYON projects and ShotGrid projects the user is assigned to
+        ayon_projects = ayon_api.get_projects()
+        ayon_project_names = {project["name"] for project in ayon_projects}
+        sg_project_names = {
+            ayon_api.slugify_string(project["name"]) for project in sg_user["projects"]
+        }
+        
+        # Assign access groups to matching projects in AYON
+        access_groups = [
+            {"project": project_name, "accessGroups": [permission_group]}
+            for project_name in sg_project_names
+            if project_name in ayon_project_names
+        ]
+        response = server_api.patch(f"users/{login}/accessGroups", accessGroups=access_groups)
+        if response.status_code != 204:
+            log.error(f"Unable to assign access groups to user {login}: {response.text}")
+
+
+def create_new_user_in_ayon(server_api, login, email, name):
+    """
+    Create a new user in AYON.
+
+    Args:
+        server_api: The AYON server API instance.
+        login (str): User's login.
+        email (str): User's email.
+        name (str): User's full name.
+    """
+    response = server_api.put(
+        f"users/{login}",
+        active=True,
+        attrib={"fullName": name, "email": email},
+        password=login,
+    )
+    if response.status_code != 200:
+        log.error(f"Unable to create user {login} in AYON! {response.text}")

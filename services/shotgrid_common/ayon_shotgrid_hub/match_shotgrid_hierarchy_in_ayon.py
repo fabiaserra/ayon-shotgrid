@@ -72,6 +72,7 @@ def match_shotgrid_hierarchy_in_ayon(
     processed_ids = set()
 
     while sg_ay_dicts_deck:
+        log.debug(f"Deck size: {len(sg_ay_dicts_deck)}")
         (ay_parent_entity, sg_ay_dict_child_id) = sg_ay_dicts_deck.popleft()
         sg_ay_dict = sg_ay_dicts[sg_ay_dict_child_id]
         sg_entity_id = sg_ay_dict["attribs"][SHOTGRID_ID_ATTRIB]
@@ -85,8 +86,6 @@ def match_shotgrid_hierarchy_in_ayon(
             continue
 
         processed_ids.add(sg_entity_id)
-
-        log.debug(f"Deck size: {len(sg_ay_dicts_deck)}")
 
         ay_entity = None
         sg_entity_sync_status = "Synced"
@@ -118,6 +117,7 @@ def match_shotgrid_hierarchy_in_ayon(
             # We only create new entities for Folders/Tasks entities
             # For Version entities we only try update the status if it already exists
             if not ay_entity and sg_ay_dict["type"] != "version":
+                log.debug("Creating new entity with dict: %s", sg_ay_dict)
                 ay_entity = _create_new_entity(
                     entity_hub,
                     ay_parent_entity,
@@ -127,6 +127,17 @@ def match_shotgrid_hierarchy_in_ayon(
             ay_sg_id_attrib = ay_entity.attribs.get(
                 SHOTGRID_ID_ATTRIB
             )
+
+            # If existing parent entity doesn't match the one from Shotgrid, update it
+            # NOTE: ignore versions because the entityhub doesn't support its parents yet (product)
+            if ay_entity.entity_type != "version" and ay_entity.parent_id != ay_parent_entity.id:
+                log.warning(
+                    "Entity '%s' parent (%s) is different than in Flow (%s), reparenting it.",
+                    ay_entity.name, ay_entity.parent.name, ay_parent_entity.name
+                )
+                entity_hub.set_entity_parent(
+                    ay_entity.id, ay_parent_entity.id, ay_entity.parent_id
+                )
 
             # If the ShotGrid ID in AYON doesn't match the one in ShotGrid
             if str(ay_sg_id_attrib) != str(sg_entity_id):  # noqa
@@ -138,6 +149,10 @@ def match_shotgrid_hierarchy_in_ayon(
                 sg_entity_sync_status = "Failed"
                 sg_project_sync_status = "Failed"
             else:
+                log.debug(
+                    "Updating ayon %s '%s' custom attributes: %s",
+                    ay_entity.entity_type, ay_entity.name, sg_ay_dict
+                )
                 update_ay_entity_custom_attributes(
                     ay_entity,
                     sg_ay_dict,
@@ -148,7 +163,7 @@ def match_shotgrid_hierarchy_in_ayon(
         # skip if no ay_entity is found
         # perhaps due Task with project entity as parent
         if not ay_entity:
-            log.error(f"Entity {sg_ay_dict} not found in AYON.")
+            log.error(f"Entity {sg_ay_dict} not found in AYON, skipping it.")
             continue
 
         # Update SG entity with new created data
@@ -182,6 +197,7 @@ def match_shotgrid_hierarchy_in_ayon(
 
         # If the entity has children, add it to the deck
         for sg_child_id in sg_ay_dicts_parents.get(sg_entity_id, []):
+            log.debug("Adding child entities from ayon entity %s -> %s", ay_entity.name, sg_child_id)
             sg_ay_dicts_deck.append((ay_entity, sg_child_id))
 
     try:
@@ -256,9 +272,9 @@ def _create_new_entity(
     if sg_ay_dict["type"].lower() == "task":
         # only create if parent_entity type is not project
         if parent_entity.entity_type == "project":
-            log.warning(
+            log.error(
                 f"Can't create task '{sg_ay_dict['name']}' under project "
-                "'{parent_entity.name}'. Parent should not be project it self!"
+                f"'{parent_entity.name}'. Parent should not be project itself!"
             )
             return
 

@@ -177,6 +177,29 @@ def create_project_command(project_code):
     return create_project.create_project(project_code)
 
 
+@click_wrap.command("sync_shotgrid_to_ayon")
+@click_wrap.argument("project_code")
+def sync_shotgrid_to_ayon(project_code):
+    """Given a SG project code, sync the project from SG to AYON."""
+    from ayon_shotgrid.scripts import create_project
+    return create_project.sync_shotgrid_to_ayon(project_code)
+
+
+@click_wrap.command("sync_ayon_to_shotgrid")
+@click_wrap.argument("project_code")
+def sync_ayon_to_shotgrid(project_code):
+    """Given a SG project code, sync the project from AYON to SG."""
+    from ayon_shotgrid.scripts import create_project
+    return create_project.sync_ayon_to_shotgrid(project_code)
+
+
+@click_wrap.command("sync_users")
+def sync_users():
+    """Sync all active users from SG to AYON"""
+    from ayon_shotgrid.scripts import sync_users
+    return sync_users.sync_users()
+
+
 @click_wrap.group(ShotgridAddon.name, help="Shotgrid CLI")
 def cli_main():
     pass
@@ -184,3 +207,6 @@ def cli_main():
 
 cli_main.add_command(populate_tasks_command)
 cli_main.add_command(create_project_command)
+cli_main.add_command(sync_shotgrid_to_ayon)
+cli_main.add_command(sync_ayon_to_shotgrid)
+cli_main.add_command(sync_users)
