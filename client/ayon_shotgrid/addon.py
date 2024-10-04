@@ -172,7 +172,9 @@ def populate_tasks_command(project_code):
 @click_wrap.command("create_project")
 @click_wrap.argument("project_code")
 def create_project_command(project_code):
-    """Given a SG project code, populate the default tasks to all its entities."""
+    """Given a SG project code, create the project in AYON, the default folders on 
+    disk and enable the sync toggles in both AYON and SG projects so they remain
+    on-sync from this point forwards."""
     from ayon_shotgrid.scripts import create_project
     return create_project.create_project(project_code)
 

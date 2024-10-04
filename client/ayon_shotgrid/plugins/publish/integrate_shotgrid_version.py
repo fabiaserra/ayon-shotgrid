@@ -266,7 +266,8 @@ class IntegrateShotgridVersion(pyblish.api.InstancePlugin):
 
         return instance.context.data["shotgridSession"].find_one(
             "Version",
-            filters
+            filters,
+            ["entity", "id", "name"]
         )
 
     def _create_version(self, version_name, instance):

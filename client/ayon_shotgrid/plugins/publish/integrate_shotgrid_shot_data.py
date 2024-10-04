@@ -1,5 +1,6 @@
 import getpass
 import re
+import os
 
 import pyblish.api
 from ayon_api.operations import OperationsSession
@@ -40,15 +41,15 @@ class IntegrateShotgridShotData(pyblish.api.InstancePlugin):
 
         context = instance.context
         self.sg = context.data.get("shotgridSession")
-        shotgrid_version = instance.data.get("shotgridVersion")
+        sg_version = instance.data.get("shotgridVersion")
 
-        if not shotgrid_version:
+        if not sg_version:
             self.log.warning(
                 "No Shotgrid version collected. Collected shot data could not be integrated into Shotgrid"
             )
             return
 
-        sg_shot = shotgrid_version.get("entity")
+        sg_shot = sg_version.get("entity")
         if not sg_shot:
             self.log.warning(
                 "Entity doesn't exist on shotgridVersion. Collected shot data could not be integrated into Shotgrid"
@@ -62,23 +63,31 @@ class IntegrateShotgridShotData(pyblish.api.InstancePlugin):
         self.update_working_resolution(instance, sg_shot)
         self.update_edit_note(instance, sg_shot)
 
-        result = self.sg.batch(self.sg_batch)
-        if not result:
+        if not self.sg_batch:
             self.log.warning(
-                "Failed to update data on Shotgrid Shot '%s'", sg_shot["name"]
+                "No data collected to update Shotgrid shot '%s'",
+                sg_shot["name"]
             )
-            return
-
-        for batch in self.sg_batch:
-            self.log.info(
-                # Using format as there is a weird bug with %sd
-                "{0}d data as {1} on Shot '{2}' : {3}".format(
-                    batch["request_type"].capitalize(),
-                    batch["entity_type"],
+        else:
+            result = self.sg.batch(self.sg_batch)
+            if not result:
+                self.log.error(
+                    "Failed to update data on Shotgrid Shot '%s' with batch '%s'",
                     sg_shot["name"],
-                    batch["data"],
+                    self.sg_batch
                 )
-            )
+                return
+
+            for batch in self.sg_batch:
+                self.log.info(
+                    # Using format as there is a weird bug with %sd
+                    "{0}d data as {1} on Shot '{2}' : {3}".format(
+                        batch["request_type"].capitalize(),
+                        batch["entity_type"],
+                        sg_shot["name"],
+                        batch["data"],
+                    )
+                )
 
     def update_cut_info(self, instance, sg_shot):
         # Check if track item had attached cut_info_data method
@@ -163,13 +172,17 @@ class IntegrateShotgridShotData(pyblish.api.InstancePlugin):
             self.log.info("Skipping working resolution integration. Not main plate")
             return
 
-        representations = instance.data["representations"]
-        if "exr" not in representations:
+        exr_repre = None
+        for repre in instance.data["representations"]:
+            if repre["name"] == "exr":
+                exr_repre = repre
+                break
+
+        if not exr_repre:
             self.log.info("No exr representation found")
             return
 
-        representation = representations["exr"]
-        transcoded_frame = representation["files"][-1]
+        transcoded_frame = os.path.join(exr_repre["stagingDir"], exr_repre["files"][-1])
 
         # Grab width, height, and pixel aspect from last frame with exrheader
         command_args = ["/sw/bin/exrheader", transcoded_frame]
@@ -187,8 +200,8 @@ class IntegrateShotgridShotData(pyblish.api.InstancePlugin):
         pixel_aspect = int(result.split("pixelAspectRatio")[-1].split("\n")[0].split(": ")[-1]) or 1
 
         # Update shot/asset doc with proper working res.
-        asset_doc = instance.data["assetEntity"]
-        asset_doc["data"].update(
+        folder_entity = instance.data["folderEntity"]
+        folder_entity["attrib"].update(
             {
                 "resolutionWidth": width,
                 "resolutionHeight": height,
@@ -199,7 +212,7 @@ class IntegrateShotgridShotData(pyblish.api.InstancePlugin):
         project_name = get_current_project_name()
         op_session = OperationsSession()
         op_session.update_entity(
-            project_name, asset_doc["type"], asset_doc["_id"], asset_doc
+            project_name, "folder", folder_entity["id"], folder_entity
         )
         op_session.commit()
 
