@@ -513,7 +513,7 @@ def sync_user(
     # Map permission group to access data
     access_data = {
         "isAdmin": permission_group == "admin",
-        "isManager": permission_group in ["executive", "management"],
+        "isManager": permission_group in ["executive", "management", "lead"],
         "isDeveloper": permission_group == "admin",
     }
 
@@ -523,9 +523,8 @@ def sync_user(
         log.error(f"Unable to set access level for user {login}: {response.text}")
         return
 
-    # If the user is not in the admin, executive, or management roles,
-    # sync project-specific access groups
-    if permission_group not in ["admin", "executive", "management"]:
+    # If the user is an artist sync project-specific access groups
+    if permission_group == "artist":
         log.info(f"Syncing project access groups for user: {login}")
         
         # Get existing AYON projects and ShotGrid projects the user is assigned to

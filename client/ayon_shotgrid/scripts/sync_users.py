@@ -32,18 +32,17 @@ def sync_users():
         permission_group = sg_user["permissionGroup"]
         access_data = {
             "isAdmin": permission_group == "admin",
-            "isManager": permission_group in ["executive", "management"],
+            "isManager": permission_group in ["executive", "management", "lead"],
             "isDeveloper": permission_group == "admin",
         }
         response = server_api.patch(f"users/{login}", data=access_data, active=True)
         if response.status_code != 204:
             logger.error(f"Unable to set access level to user {login}: {response.text}")
 
-        # If user role is not one of 'admin', 'executive' or 'management'
-        # we check which projects they are assigned to so we give them access
-        # individually. Those roles have access to all projects by default
-        # and that's why we don't need to do any granular permission access
-        if permission_group not in ["admin", "executive", "management"]:
+        # If user role is an artist we check which projects they are assigned to so
+        # we give them access individually. The other roles have access to all projects
+        # by default and that's why we don't need to do any granular permission access
+        if permission_group == "artist":
             logger.info(f"Syncing access project groups for user: {login}")
             access_groups = [
                 {"project": project_name, "accessGroups": [sg_user["permissionGroup"]]}
